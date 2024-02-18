@@ -33,12 +33,81 @@ export class Preloader extends Scene
         this.load.setPath('assets');
 
         this.load.image('logo', 'logo.png');
+        this.load.image('ground', 'platform.png');
+        this.load.image('star', 'star.png');
+        this.load.image('bomb', 'bomb.png');
+        this.load.spritesheet('player', 'Greenbot_sprites.png', {frameWidth:48, frameHeight: 48});
+        this.load.spritesheet('emote', 'emote_sprites.png', {frameWidth:32, frameHeight:32});
     }
 
     create ()
     {
         //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
         //  For example, you can define global animations here, so we can use them in other scenes.
+
+        // var platforms = this.physics.add.staticGroup();
+        // var emote;
+        // var stars;
+        // var bombs;
+        // var platforms;
+        // var cursors;
+        // var score = 0;
+        // var gameOver = false;
+        // var scoreText;
+
+        // var fastFall = 0;
+
+        //  Our player animations, still, walking, jumping, and idle
+        this.anims.create({
+            key: 'run',
+            frames: this.anims.generateFrameNumbers('player', { start: 9, end: 13 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'still',
+            frames: [ { key: 'player', frame: 0 } ],
+            frameRate: 20
+        });
+
+        this.anims.create({
+            key: 'idle',
+            frames: this.anims.generateFrameNumbers('player', { start: 0, end: 2 }),
+            frameRate: 5,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'jump',
+            frames: [ { key: 'player', frame: 3 } ],
+            frameRate: 20
+        });
+
+        this.anims.create({
+            key: 'fall',
+            frames: [ { key: 'player', frame: 4 } ],
+            frameRate: 20
+        });
+
+        this.anims.create({
+            key: 'fallFast',
+            frames: [ { key: 'player', frame: 5 } ],
+            frameRate: 20
+        });
+
+        this.anims.create({
+            key: 'impact',
+            frames: this.anims.generateFrameNumbers('player', { start: 6, end: 7 }),
+            frameRate: 4
+        });
+
+        // emote animations
+        this.anims.create({
+            key: 'exclaim',
+            frames: this.anims.generateFrameNumbers('emote', { start: 16, end: 23 }),
+            frameRate: 10
+        });
 
         //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
         this.scene.start('MainMenu');
