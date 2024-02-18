@@ -10,7 +10,9 @@ var score = 0;
 var gameOver = false;
 var scoreText;
 
-var fastFall = 0;
+var inAir = true;
+var fastFall = false;
+var isPlayerMovable = true;
 
 export class Game extends Scene
 {
@@ -50,7 +52,7 @@ export class Game extends Scene
         player = this.physics.add.sprite(100, 450, 'player');
 
         //  Player physics properties. Give the little guy a slight bounce.
-        player.setBounce(0.15);
+        player.setBounce(0);
         player.setCollideWorldBounds(true);
 
         //  Input Events
@@ -100,11 +102,19 @@ export class Game extends Scene
         this.cameras.main.startFollow(player, false, 1, 1, 0, 0);
         }
 
+        // ---Sound---
+        {
+            this.landing = this.sound.add('landing', {volume: 0.3});
+            this.step = this.sound.add('step');
+        }
+
         this.input.once('pointerdown', () => {
 
-            this.scene.start('GameOver');
+            // this.scene.start('GameOver');
 
         });
+
+        
     }
 
     update ()
@@ -114,17 +124,25 @@ export class Game extends Scene
             return;
         }
 
-        if (cursors.left.isDown)
+        // ---Player Movement---
+        {
+        if (cursors.left.isDown && isPlayerMovable)
         {
             player.setFlipX(true);
             player.setVelocityX(-160);
             player.anims.play('run', true);
+            if(!this.step.isPlaying) {
+                this.step.play();
+            }
         }
-        else if (cursors.right.isDown)
+        else if (cursors.right.isDown && isPlayerMovable)
         {
             player.setFlipX(false);
             player.setVelocityX(160);
             player.anims.play('run', true);
+            if(!this.step.isPlaying) {
+                this.step.play();
+            }
         }
         else // no key press
         {
@@ -132,7 +150,13 @@ export class Game extends Scene
             player.anims.play('idle', true);
         }
 
+        //jump code
+        if (cursors.up.isDown && player.body.touching.down && isPlayerMovable) {
+            player.setVelocityY(-330);
+        }
+
         if (!player.body.touching.down) {
+            inAir = true;
             if (player.body.velocity.y < 0) { //up is negative y
                 player.anims.play('jump');
             }
@@ -140,15 +164,12 @@ export class Game extends Scene
                 player.anims.play('fall');
             }
             else if (player.body.velocity.y > 275) {
-                fastFall = 1;
+                fastFall = true;
                 player.anims.play('fallFast');
             }
         }
-
-        if (cursors.up.isDown && player.body.touching.down)
-        {
-            player.setVelocityY(-330);
         }
+        
         
         // emote sprite follows player
         emote.setX(player.x);
@@ -159,13 +180,23 @@ export class Game extends Scene
 
 //currently doesn't overide other animations, so never visible to player
 function hitGround (player, platforms) {
-    if (fastFall == 1) {
-        fastFall = 0;
-        emote.setVisible(true);
-        emote.anims.play('exclaim');
-        emote.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
-        emote.setVisible(false);
-        });
+    if (player.body.touching.down){
+        if (inAir) {
+            inAir = false;
+            this.landing.play();
+        }
+        // if (fastFall) {
+        //     fastFall = false;
+        //     this.input.keyboard.enabled = false;
+        //     isPlayerMovable = false;
+        //     emote.setVisible(true);
+        //     emote.anims.play('exclaim');
+        //     emote.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
+        //     emote.setVisible(false);
+        //     this.input.keyboard.enabled = true;
+        //     isPlayerMovable = true;
+        //     });
+        // }
     }
 }
 

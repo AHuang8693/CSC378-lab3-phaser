@@ -38,6 +38,10 @@ export class Preloader extends Scene
         this.load.image('bomb', 'bomb.png');
         this.load.spritesheet('player', 'Greenbot_sprites.png', {frameWidth:48, frameHeight: 48});
         this.load.spritesheet('emote', 'emote_sprites.png', {frameWidth:32, frameHeight:32});
+
+        this.load.setPath('assets/SFX');
+        this.load.audio("landing", 'landing.ogg')
+        this.load.audio("step", "step.ogg")
     }
 
     create ()
