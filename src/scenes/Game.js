@@ -13,6 +13,8 @@ var scoreText;
 var inAir = true;
 var fastFall = false;
 var isPlayerMovable = true;
+var playerIdle = false;
+var idleTimer;
 
 export class Game extends Scene
 {
@@ -36,17 +38,17 @@ export class Game extends Scene
 
         // ---platforms---
         {
-        //  The platforms group contains the ground and the 2 ledges we can jump on
-        var platforms = this.physics.add.staticGroup();
+            //  The platforms group contains the ground and the 2 ledges we can jump on
+            var platforms = this.physics.add.staticGroup();
 
-        //  Here we create the ground.
-        //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
-        platforms.create(400, 568, 'ground').setScale(2).refreshBody();
+            //  Here we create the ground.
+            //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
+            platforms.create(400, 568, 'ground').setScale(2).refreshBody();
 
-        //  Now let's create some ledges
-        platforms.create(600, 400, 'ground');
-        platforms.create(50, 250, 'ground');
-        platforms.create(750, 220, 'ground');
+            //  Now let's create some ledges
+            platforms.create(600, 400, 'ground');
+            platforms.create(50, 250, 'ground');
+            platforms.create(750, 220, 'ground');
         }
         // The player and its settings
         player = this.physics.add.sprite(100, 450, 'player');
@@ -104,8 +106,13 @@ export class Game extends Scene
 
         // ---Sound---
         {
-            this.landing = this.sound.add('landing', {volume: 0.3});
-            this.step = this.sound.add('step');
+            this.landing = this.sound.add('landing', {volume: 0.2});
+            this.step = this.sound.add('step', {volume: 0.1});
+        }
+
+        // ---Timer---
+        {
+            this.idleTimer = this.time.addEvent({ delay: 3000, callback: this.onIdle, callbackScope: this});
         }
 
         this.input.once('pointerdown', () => {
@@ -116,9 +123,21 @@ export class Game extends Scene
 
         
     }
+    // ---Timer Functions---
+    //after some time, mark the player as idle
+    onIdle() {
+        playerIdle = true;
+    }
+    //restarts idle timer and marks player as not idle
+    resetIdle() {
+        this.idleTimer.reset({ delay: 3000, callback: this.onIdle, callbackScope: this});
+        this.time.addEvent(this.idleTimer);
+        playerIdle = false;
+    }
 
     update ()
     {
+
         if (gameOver)
         {
             return;
@@ -126,48 +145,55 @@ export class Game extends Scene
 
         // ---Player Movement---
         {
-        if (cursors.left.isDown && isPlayerMovable)
-        {
-            player.setFlipX(true);
-            player.setVelocityX(-160);
-            player.anims.play('run', true);
-            if(!this.step.isPlaying) {
-                this.step.play();
+            
+            if (cursors.left.isDown && isPlayerMovable)
+            {
+                this.resetIdle();   //resets Idle timer
+                player.setFlipX(true);
+                player.setVelocityX(-160);
+                player.anims.play('run', true);
+                if(!this.step.isPlaying && player.body.touching.down) {
+                    this.step.play();
+                }
             }
-        }
-        else if (cursors.right.isDown && isPlayerMovable)
-        {
-            player.setFlipX(false);
-            player.setVelocityX(160);
-            player.anims.play('run', true);
-            if(!this.step.isPlaying) {
-                this.step.play();
+            else if (cursors.right.isDown && isPlayerMovable)
+            {
+                this.resetIdle();
+                player.setFlipX(false);
+                player.setVelocityX(160);
+                player.anims.play('run', true);
+                if(!this.step.isPlaying && player.body.touching.down) {
+                    this.step.play();
+                }
             }
-        }
-        else // no key press
-        {
-            player.setVelocityX(0);
-            player.anims.play('idle', true);
-        }
+            else // no key press
+            {
+                player.setVelocityX(0);
+                if (playerIdle) {
+                    player.anims.play('idle', true);
+                }
+                else {player.anims.play('still')}
+            }
 
-        //jump code
-        if (cursors.up.isDown && player.body.touching.down && isPlayerMovable) {
-            player.setVelocityY(-330);
-        }
+            //jump code
+            if (cursors.up.isDown && player.body.touching.down && isPlayerMovable) {
+                this.resetIdle();
+                player.setVelocityY(-330);
+            }
 
-        if (!player.body.touching.down) {
-            inAir = true;
-            if (player.body.velocity.y < 0) { //up is negative y
-                player.anims.play('jump');
+            if (!player.body.touching.down) {
+                inAir = true;
+                if (player.body.velocity.y < 0) { //up is negative y
+                    player.anims.play('jump');
+                }
+                else if (275 >= player.body.velocity.y > 0) {
+                    player.anims.play('fall');
+                }
+                else if (player.body.velocity.y > 275) {
+                    fastFall = true;
+                    player.anims.play('fallFast');
+                }
             }
-            else if (275 >= player.body.velocity.y > 0) {
-                player.anims.play('fall');
-            }
-            else if (player.body.velocity.y > 275) {
-                fastFall = true;
-                player.anims.play('fallFast');
-            }
-        }
         }
         
         
@@ -175,7 +201,7 @@ export class Game extends Scene
         emote.setX(player.x);
         emote.setY(player.y - 40);
     }
-
+    
 }
 
 //currently doesn't overide other animations, so never visible to player

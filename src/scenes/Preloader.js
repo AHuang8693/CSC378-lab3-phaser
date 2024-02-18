@@ -41,7 +41,7 @@ export class Preloader extends Scene
 
         this.load.setPath('assets/SFX');
         this.load.audio("landing", 'landing.ogg')
-        this.load.audio("step", "step.ogg")
+        this.load.audio("step", "step.mp3")
     }
 
     create ()
@@ -65,7 +65,7 @@ export class Preloader extends Scene
         this.anims.create({
             key: 'run',
             frames: this.anims.generateFrameNumbers('player', { start: 9, end: 13 }),
-            frameRate: 10,
+            frameRate: 8,
             repeat: -1
         });
 
