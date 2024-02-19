@@ -83,6 +83,18 @@ export class Preloader extends Scene
         });
 
         this.anims.create({
+            key: 'sleep1',
+            frames: [ { key: 'player', frame: 18} ],
+            frameRate: 1
+        });
+        
+        this.anims.create({
+            key: 'sleep2',
+            frames: [ { key: 'player', frame: 19} ],
+            frameRate: 1
+        });
+
+        this.anims.create({
             key: 'jump',
             frames: [ { key: 'player', frame: 3 } ],
             frameRate: 20
@@ -107,6 +119,12 @@ export class Preloader extends Scene
         });
 
         // emote animations
+        this.anims.create({
+            key: 'ellipsis',
+            frames: this.anims.generateFrameNumbers('emote', { start: 8, end: 15 }),
+            frameRate: 5
+        });
+
         this.anims.create({
             key: 'exclaim',
             frames: this.anims.generateFrameNumbers('emote', { start: 16, end: 23 }),

@@ -15,6 +15,7 @@ var fastFall = false;
 var isPlayerMovable = true;
 var playerIdle = false;
 var idleTimer;
+var isAsleep = false;
 
 export class Game extends Scene
 {
@@ -112,7 +113,9 @@ export class Game extends Scene
 
         // ---Timer---
         {
-            this.idleTimer = this.time.addEvent({ delay: 3000, callback: this.onIdle, callbackScope: this});
+            this.idleTimer = this.time.addEvent({ delay: 5000, callback: this.onIdle, callbackScope: this});
+            this.sleepTimer = new Phaser.Time.TimerEvent({ delay: 2000, callback: this.onSleep, callbackScope: this});
+            this.sleepEmoteTimer = new Phaser.Time.TimerEvent({ delay: 5000, callback: this.onSleepEmote, callbackScope: this});
         }
 
         this.input.once('pointerdown', () => {
@@ -124,15 +127,35 @@ export class Game extends Scene
         
     }
     // ---Timer Functions---
-    //after some time, mark the player as idle
-    onIdle() {
-        playerIdle = true;
-    }
-    //restarts idle timer and marks player as not idle
+    //restarts idle related timers and marks player as not idle. Function is called when a movement key is pressed
     resetIdle() {
-        this.idleTimer.reset({ delay: 3000, callback: this.onIdle, callbackScope: this});
+        this.idleTimer.reset({ delay: 5000, callback: this.onIdle, callbackScope: this});
+        this.sleepTimer.reset({ delay: 2000, callback: this.onSleep, callbackScope: this});
+        this.sleepEmoteTimer.reset({ delay: 5000, callback: this.onSleepEmote, callbackScope: this});
         this.time.addEvent(this.idleTimer);
         playerIdle = false;
+    }
+    //after time triggers, mark the player as idle, start 2s sleep timer
+    onIdle() {
+        playerIdle = true;
+        this.time.addEvent(this.sleepTimer);
+    }
+    //For transitioning between the two sleep frames, start 5s sleep Emote timer
+    onSleep() {
+        isAsleep = true;
+        this.time.addEvent(this.sleepEmoteTimer);
+    }
+    //For playing the waiting emote while sleeping
+    onSleepEmote() {
+        if(playerIdle) {
+            emote.setVisible(true);
+            emote.anims.play('ellipsis', true);
+            emote.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
+                    emote.setVisible(false);
+                    this.sleepEmoteTimer.reset({ delay: 5000, callback: this.onSleepEmote, callbackScope: this});
+                    this.time.addEvent(this.sleepEmoteTimer);
+            });
+        }
     }
 
     update ()
@@ -166,13 +189,21 @@ export class Game extends Scene
                     this.step.play();
                 }
             }
-            else // no key press
+            else //no key presses, look above in `Timer Functions` for idle logic
             {
                 player.setVelocityX(0);
                 if (playerIdle) {
-                    player.anims.play('idle', true);
+                    if(!isAsleep) {
+                        player.anims.play('sleep1');
+                    }
+                    else if(isAsleep) {
+                        player.anims.play('sleep2');
+                    }
                 }
-                else {player.anims.play('still')}
+                else {
+                    isAsleep = false;
+                    player.anims.play('idle', true)
+                }
             }
 
             //jump code
