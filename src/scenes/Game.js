@@ -107,8 +107,9 @@ export class Game extends Scene
 
         // ---Sound---
         {
-            this.landing = this.sound.add('landing', {volume: 0.2});
-            this.step = this.sound.add('step', {volume: 0.1});
+            this.landing = this.sound.add('landing', {volume: 0.05});
+            this.step = this.sound.add('step', {volume: 0.04});
+            this.jump = this.sound.add('jump', {volume: 0.015});
         }
 
         // ---Timer---
@@ -210,6 +211,9 @@ export class Game extends Scene
             if (cursors.up.isDown && player.body.touching.down && isPlayerMovable) {
                 this.resetIdle();
                 player.setVelocityY(-330);
+                if(!this.jump.isPlaying && player.body.touching.down) {
+                    this.jump.play();
+                }
             }
 
             if (!player.body.touching.down) {
