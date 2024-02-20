@@ -16,6 +16,7 @@ var isPlayerMovable = true;
 var playerIdle = false;
 var idleTimer;
 var isAsleep = false;
+var worldLayer;
 
 export class Game extends Scene
 {
@@ -27,15 +28,20 @@ export class Game extends Scene
         
     create ()
     {
-        this.cameras.main.setBackgroundColor(0x00ff00);
+        // ---Map---
+        {
+            const map = this.make.tilemap({key: 'map'});
 
-        this.add.image(512, 384, 'background').setAlpha(0.5);
+            const tileset  = map.addTilesetImage("IndustrialTiles", 'tiles');
 
-        // this.add.text(512, 384, 'Make something fun!\nand share it with us:\nsupport@phaser.io', {
-        //     fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
-        //     stroke: '#000000', strokeThickness: 8,
-        //     align: 'center'
-        // }).setOrigin(0.5);
+            worldLayer = map.createLayer("World", tileset, 0, 0);
+            worldLayer.setCollisionByProperty({collides: true});
+            
+            this.cameras.main.setBackgroundColor(0x00ff00);
+
+        // this.add.image(512, 384, 'background').setAlpha(0.5);
+        }
+        
 
         // ---platforms---
         {
@@ -88,7 +94,8 @@ export class Game extends Scene
 
         // ---Collision---
         {
-            //  Collide the player and the stars with the platforms
+            //  Collide the player and the stars with the platforms & map tiles
+            this.physics.add.collider(player, worldLayer, hitGround, null, this);
             this.physics.add.collider(player, platforms, hitGround, null, this);
             this.physics.add.collider(stars, platforms);
             this.physics.add.collider(bombs, platforms);

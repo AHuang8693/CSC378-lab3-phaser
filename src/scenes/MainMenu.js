@@ -49,6 +49,9 @@ export class MainMenu extends Scene
             subText.setVisible(false);
             player.body.setAllowGravity(true);
 
+            //for testing, skip animation -----
+            this.scene.start('Game');
+
         });
     }
     startGame() {
