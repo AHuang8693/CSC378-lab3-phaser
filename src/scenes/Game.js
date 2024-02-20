@@ -47,8 +47,25 @@ export class Game extends Scene
 
             // ---platforms---
             {
-                //  The platforms group contains the ground and the 2 ledges we can jump on
-                // var platforms = this.physics.add.staticGroup();
+                //  The platforms group 
+                platforms = this.physics.add.staticGroup();
+                //This code looks at the tile index and replaces platform tiles with resized static objects
+                worldLayer.forEachTile(tile => {
+                    if (tile.index === 77 || tile.index === 78 || tile.index === 79) {
+                        // A sprite has its origin at the center, so place the sprite at the center of the tile
+                        const x = tile.getCenterX();
+                        const y = tile.getCenterY();
+                        var plat;
+                        if(tile.index === 77) {plat = platforms.create(x, y, "plat1");}
+                        else if(tile.index === 78) {plat = platforms.create(x, y, "plat2");}
+                        else if(tile.index === 79) {plat = platforms.create(x, y, "plat3");}
+
+                        plat.body.setSize(32, 10).setOffset(0, 0);
+
+                        // And lastly, remove the spike tile from the layer
+                        worldLayer.removeTileAt(tile.x, tile.y);
+                    }
+                });
 
                 //  Here we create the ground.
                 //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
@@ -62,11 +79,12 @@ export class Game extends Scene
         }
         
         // The player and its settings
-        player = this.physics.add.sprite(100, 450, 'player');
+        player = this.physics.add.sprite(100, 662, 'player');
 
         //  Player physics properties. Give the little guy a slight bounce.
         player.setBounce(0);
         player.setCollideWorldBounds(true);
+        player.setSize(36, 39).setOffset(0, 9); //makes player hitbox a bit smaller to match sprite, more forgiving
 
         //  Input Events
         cursors = this.input.keyboard.createCursorKeys();
@@ -79,15 +97,16 @@ export class Game extends Scene
 
         //  Some stars to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
         stars = this.physics.add.group({
-            key: 'star',
-            repeat: 11,
-            setXY: { x: 12, y: 77, stepX: 70 }
+            key: 'box',
+            repeat: 9,
+            setXY: { x: 192, y: 120, stepX: 80 }
         });
 
         stars.children.iterate(function (child) {
 
             //  Give each star a slightly different bounce
             child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+            child.setSize(24, 14).setOffset(0, 18) //resize to sprite size
 
         });
 
@@ -100,8 +119,11 @@ export class Game extends Scene
         {
             //  Collide the player and the stars with map tiles
             this.physics.add.collider(player, worldLayer, hitGround, null, this);
+            this.physics.add.collider(player, platforms, hitGround, null, this);
             this.physics.add.collider(stars, worldLayer);
+            this.physics.add.collider(stars, platforms);
             this.physics.add.collider(bombs, worldLayer);
+            this.physics.add.collider(bombs, platforms);
 
             //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
             this.physics.add.overlap(player, stars, collectStar, null, this);
@@ -230,10 +252,10 @@ export class Game extends Scene
                 if (player.body.velocity.y < 0) { //up is negative y
                     player.anims.play('jump');
                 }
-                else if (275 >= player.body.velocity.y > 0) {
+                else if (330 >= player.body.velocity.y > 0) {
                     player.anims.play('fall');
                 }
-                else if (player.body.velocity.y > 275) {
+                else if (player.body.velocity.y > 330) {
                     fastFall = true;
                     player.anims.play('fallFast');
                 }
@@ -270,7 +292,7 @@ function hitGround (player, worldLayer) {
     }
 }
 
-function collectStar (player, star)
+function collectStar(player, star)
 {
     star.disableBody(true, true);
 
@@ -283,16 +305,17 @@ function collectStar (player, star)
         //  A new batch of stars to collect
         stars.children.iterate(function (child) {
 
-            child.enableBody(true, child.x, 0, true, true);
+            child.enableBody(true, child.x, 120, true, true);
 
         });
 
-        var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+        var x = (player.x < 512) ? Phaser.Math.Between(192, 512) : Phaser.Math.Between(512, 832);
 
-        var bomb = bombs.create(x, 77, 'bomb');
+        var bomb = bombs.create(x, 120, 'bomb');
+        bomb.setSize(28,22).setOffset(0, 10); //resize to sprite size
         bomb.setBounce(1);
         bomb.setCollideWorldBounds(true);
-        bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+        bomb.setVelocity(Phaser.Math.Between(-160, 160), 20);
         bomb.allowGravity = false;
 
     }
@@ -307,4 +330,5 @@ function hitBomb (player, bomb)
     player.anims.play('turn');
 
     gameOver = true;
+    this.scene.start('GameOver');
 }

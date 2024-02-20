@@ -35,12 +35,20 @@ export class Preloader extends Scene
         this.load.image('tiles', 'IndustrialTiles.png');
         this.load.tilemapTiledJSON('map', "PackerMap.json");
 
-        this.load.image('logo', 'logo.png');
         this.load.image('ground', 'platform.png');
         this.load.image('star', 'star.png');
-        this.load.image('bomb', 'bomb.png');
+        // this.load.image('bomb', 'bomb.png');
         this.load.spritesheet('player', 'Greenbot_sprites.png', {frameWidth:48, frameHeight: 48});
         this.load.spritesheet('emote', 'emote_sprites.png', {frameWidth:32, frameHeight:32});
+
+        this.load.setPath('assets/industrial-zone/1 Tiles'); //Industrial Zone assets
+        this.load.image('plat1', "IndustrialTile_77.png");
+        this.load.image('plat2', "IndustrialTile_78.png");
+        this.load.image('plat3', "IndustrialTile_79.png");
+
+        this.load.setPath('assets/industrial-zone/3 Objects');
+        this.load.image('box', 'Box4.png');
+        this.load.image('bomb', 'Box8.png')
 
         this.load.setPath('assets/SFX');
         this.load.audio("landing", 'landing.ogg');
