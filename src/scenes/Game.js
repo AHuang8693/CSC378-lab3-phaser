@@ -3,6 +3,7 @@ import { Scene } from 'phaser';
 var player;
 var platforms;
 var emote;
+var explode;
 var stars;
 var bombs;
 var cursors;
@@ -94,11 +95,15 @@ export class Game extends Scene
         emote.body.setAllowGravity(false);
         emote.setVisible(false);
         
+        //explode object to play animation (since the explosion sprites aren't in the player sprite sheet, sizes are off)
+        explode = this.physics.add.sprite(player.x, player.y, "explode");
+        explode.body.setAllowGravity(false);
+        explode.setVisible(false);
 
         //  Some stars to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
         stars = this.physics.add.group({
             key: 'box',
-            repeat: 9,
+            repeat: 0,
             setXY: { x: 192, y: 120, stepX: 80 }
         });
 
@@ -113,7 +118,7 @@ export class Game extends Scene
         bombs = this.physics.add.group();
 
         //  The score
-        scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+        scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' }).setColor('white');
 
         // ---Collision---
         {
@@ -141,6 +146,7 @@ export class Game extends Scene
             this.landing = this.sound.add('landing', {volume: 0.05});
             this.step = this.sound.add('step', {volume: 0.04});
             this.jump = this.sound.add('jump', {volume: 0.015});
+            this.explodeSound = this.sound.add('explodeSound', {volume: 0.01});
         }
 
         // ---Timer---
@@ -149,13 +155,6 @@ export class Game extends Scene
             this.sleepTimer = new Phaser.Time.TimerEvent({ delay: 2000, callback: this.onSleep, callbackScope: this});
             this.sleepEmoteTimer = new Phaser.Time.TimerEvent({ delay: 5000, callback: this.onSleepEmote, callbackScope: this});
         }
-
-        this.input.once('pointerdown', () => {
-
-            // this.scene.start('GameOver');
-
-        });
-
         
     }
     // ---Timer Functions---
@@ -266,6 +265,9 @@ export class Game extends Scene
         // emote sprite follows player
         emote.setX(player.x);
         emote.setY(player.y - 40);
+        //same for explosion object
+        explode.setX(player.x);
+        explode.setY(player.y);
     }
     
 }
@@ -309,7 +311,7 @@ function collectStar(player, star)
 
         });
 
-        var x = (player.x < 512) ? Phaser.Math.Between(192, 512) : Phaser.Math.Between(512, 832);
+        var x = (player.x < 512) ? Phaser.Math.Between(512, 832) : Phaser.Math.Between(192, 512);
 
         var bomb = bombs.create(x, 120, 'bomb');
         bomb.setSize(28,22).setOffset(0, 10); //resize to sprite size
@@ -326,9 +328,20 @@ function hitBomb (player, bomb)
     this.physics.pause();
 
     player.setTint(0xff0000);
+    player.setVisible(false);
 
-    player.anims.play('turn');
+    if(!this.explodeSound.isPlaying) {
+        this.explodeSound.play();
+    }
+
+    explode.setVisible(true);
+    explode.anims.play('playerExplode');
 
     gameOver = true;
-    this.scene.start('GameOver');
+
+
+    explode.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
+        this.scene.start('GameOver');
+    });
+    
 }

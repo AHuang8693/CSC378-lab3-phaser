@@ -37,9 +37,9 @@ export class Preloader extends Scene
 
         this.load.image('ground', 'platform.png');
         this.load.image('star', 'star.png');
-        // this.load.image('bomb', 'bomb.png');
         this.load.spritesheet('player', 'Greenbot_sprites.png', {frameWidth:48, frameHeight: 48});
         this.load.spritesheet('emote', 'emote_sprites.png', {frameWidth:32, frameHeight:32});
+        this.load.spritesheet('explode', 'explode_sprites.png', {frameWidth:55, frameHeight:52});
 
         this.load.setPath('assets/industrial-zone/1 Tiles'); //Industrial Zone assets
         this.load.image('plat1', "IndustrialTile_77.png");
@@ -54,6 +54,7 @@ export class Preloader extends Scene
         this.load.audio("landing", 'landing.ogg');
         this.load.audio("step", "step.mp3");
         this.load.audio("jump", "Jump.wav");
+        this.load.audio("explodeSound", "Explosion2.wav");
     }
 
     create ()
@@ -116,6 +117,13 @@ export class Preloader extends Scene
             key: 'impact',
             frames: this.anims.generateFrameNumbers('player', { start: 6, end: 7 }),
             frameRate: 4
+        });
+
+        // explode animation
+        this.anims.create({
+            key: 'playerExplode',
+            frames: this.anims.generateFrameNumbers('explode', { start: 0, end: 5 }),
+            frameRate: 10
         });
 
         // emote animations
