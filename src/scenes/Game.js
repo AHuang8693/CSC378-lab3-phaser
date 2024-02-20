@@ -1,10 +1,10 @@
 import { Scene } from 'phaser';
 
 var player;
+var platforms;
 var emote;
 var stars;
 var bombs;
-var platforms;
 var cursors;
 var score = 0;
 var gameOver = false;
@@ -17,6 +17,7 @@ var playerIdle = false;
 var idleTimer;
 var isAsleep = false;
 var worldLayer;
+var backgroundLayer;
 
 export class Game extends Scene
 {
@@ -34,29 +35,32 @@ export class Game extends Scene
 
             const tileset  = map.addTilesetImage("IndustrialTiles", 'tiles');
 
+            backgroundLayer = map.createLayer("Background", tileset, 0, 0);
             worldLayer = map.createLayer("World", tileset, 0, 0);
+            
+
             worldLayer.setCollisionByProperty({collides: true});
             
             this.cameras.main.setBackgroundColor(0x00ff00);
 
         // this.add.image(512, 384, 'background').setAlpha(0.5);
+
+            // ---platforms---
+            {
+                //  The platforms group contains the ground and the 2 ledges we can jump on
+                // var platforms = this.physics.add.staticGroup();
+
+                //  Here we create the ground.
+                //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
+                // platforms.create(400, 568, 'ground').setScale(2).refreshBody();
+
+                //  Now let's create some ledges
+                // platforms.create(600, 400, 'ground');
+                // platforms.create(50, 250, 'ground');
+                // platforms.create(750, 220, 'ground');
+            }
         }
         
-
-        // ---platforms---
-        {
-            //  The platforms group contains the ground and the 2 ledges we can jump on
-            var platforms = this.physics.add.staticGroup();
-
-            //  Here we create the ground.
-            //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
-            platforms.create(400, 568, 'ground').setScale(2).refreshBody();
-
-            //  Now let's create some ledges
-            platforms.create(600, 400, 'ground');
-            platforms.create(50, 250, 'ground');
-            platforms.create(750, 220, 'ground');
-        }
         // The player and its settings
         player = this.physics.add.sprite(100, 450, 'player');
 
@@ -77,7 +81,7 @@ export class Game extends Scene
         stars = this.physics.add.group({
             key: 'star',
             repeat: 11,
-            setXY: { x: 12, y: 0, stepX: 70 }
+            setXY: { x: 12, y: 77, stepX: 70 }
         });
 
         stars.children.iterate(function (child) {
@@ -94,15 +98,13 @@ export class Game extends Scene
 
         // ---Collision---
         {
-            //  Collide the player and the stars with the platforms & map tiles
+            //  Collide the player and the stars with map tiles
             this.physics.add.collider(player, worldLayer, hitGround, null, this);
-            this.physics.add.collider(player, platforms, hitGround, null, this);
-            this.physics.add.collider(stars, platforms);
-            this.physics.add.collider(bombs, platforms);
+            this.physics.add.collider(stars, worldLayer);
+            this.physics.add.collider(bombs, worldLayer);
 
             //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
             this.physics.add.overlap(player, stars, collectStar, null, this);
-
             this.physics.add.collider(player, bombs, hitBomb, null, this);
         }
         // ---Camera---
@@ -183,7 +185,7 @@ export class Game extends Scene
                 player.setFlipX(true);
                 player.setVelocityX(-160);
                 player.anims.play('run', true);
-                if(!this.step.isPlaying && player.body.touching.down) {
+                if(!this.step.isPlaying && player.body.blocked.down) {
                     this.step.play();
                 }
             }
@@ -193,7 +195,7 @@ export class Game extends Scene
                 player.setFlipX(false);
                 player.setVelocityX(160);
                 player.anims.play('run', true);
-                if(!this.step.isPlaying && player.body.touching.down) {
+                if(!this.step.isPlaying && player.body.blocked.down) {
                     this.step.play();
                 }
             }
@@ -215,15 +217,15 @@ export class Game extends Scene
             }
 
             //jump code
-            if (cursors.up.isDown && player.body.touching.down && isPlayerMovable) {
+            if (cursors.up.isDown && player.body.blocked.down && isPlayerMovable) {
                 this.resetIdle();
                 player.setVelocityY(-330);
-                if(!this.jump.isPlaying && player.body.touching.down) {
+                if(!this.jump.isPlaying && player.body.blocked.down) {
                     this.jump.play();
                 }
             }
 
-            if (!player.body.touching.down) {
+            if (!player.body.blocked.down) {
                 inAir = true;
                 if (player.body.velocity.y < 0) { //up is negative y
                     player.anims.play('jump');
@@ -247,8 +249,8 @@ export class Game extends Scene
 }
 
 //currently doesn't overide other animations, so never visible to player
-function hitGround (player, platforms) {
-    if (player.body.touching.down){
+function hitGround (player, worldLayer) {
+    if (player.body.blocked.down){
         if (inAir) {
             inAir = false;
             this.landing.play();
@@ -287,7 +289,7 @@ function collectStar (player, star)
 
         var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
 
-        var bomb = bombs.create(x, 16, 'bomb');
+        var bomb = bombs.create(x, 77, 'bomb');
         bomb.setBounce(1);
         bomb.setCollideWorldBounds(true);
         bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
