@@ -103,7 +103,7 @@ export class Game extends Scene
         //  Some stars to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
         stars = this.physics.add.group({
             key: 'box',
-            repeat: 0,
+            repeat: 9,
             setXY: { x: 192, y: 120, stepX: 80 }
         });
 
@@ -174,6 +174,8 @@ export class Game extends Scene
     //For transitioning between the two sleep frames, start 5s sleep Emote timer
     onSleep() {
         isAsleep = true;
+        //another reset here because the one in resetIdle() doesn't seem to stop this timer in-progress for some reason
+        this.sleepEmoteTimer.reset({ delay: 5000, callback: this.onSleepEmote, callbackScope: this});
         this.time.addEvent(this.sleepEmoteTimer);
     }
     //For playing the waiting emote while sleeping

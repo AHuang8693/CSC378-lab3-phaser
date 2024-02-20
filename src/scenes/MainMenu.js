@@ -43,14 +43,17 @@ export class MainMenu extends Scene
         zoneStart.body.setAllowGravity(false);
         this.physics.add.collider(player, zoneStart, this.startGame, null, this);
 
+        var skipFlag = false;
         this.input.keyboard.on('keydown', () => {
-
             titleTxt.setVisible(false);
             subText.setVisible(false);
             player.body.setAllowGravity(true);
 
-            //for testing, skip animation -----
-            this.scene.start('Game');
+            //skip animation with second key press
+            if(skipFlag) {
+                this.scene.start('Game');
+            }
+            skipFlag = true;
 
         });
     }

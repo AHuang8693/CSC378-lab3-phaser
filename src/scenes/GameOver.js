@@ -19,9 +19,15 @@ export class GameOver extends Scene
             align: 'center'
         }).setOrigin(0.5);
 
-        this.input.once('pointerdown', () => {
+        var subText = this.add.text(512, 480, 'Press Any Key to Restart', {
+            fontFamily: 'Arial Black', fontSize: 30, color: '#ffffff',
+            stroke: '#000000', strokeThickness: 6,
+            align: 'center'
+        }).setOrigin(0.5);
 
-            this.scene.start('MainMenu');
+        this.input.keyboard.on('keydown', () => {
+
+            this.scene.start('Game');
 
         });
     }
