@@ -8,20 +8,21 @@ var scoreText;
 
 var idleTimer;
 
-export class Game extends Scene
+export class Tutorial extends Scene
 {
     constructor ()
     {
-        super('Game');
+        super('Tutorial');
     }
         
     create ()
     {
+        this.levelNum = 0;
         this.gameOver = false;
         
         // ---Map---
-        {
-            const map = this.make.tilemap({key: 'map1'});
+        
+            const map = this.make.tilemap({key: 'tutorialMap'});
 
             const tileset  = map.addTilesetImage("IndustrialTilesV2", 'tiles');
 
@@ -32,8 +33,6 @@ export class Game extends Scene
             this.worldLayer.setCollisionByProperty({collides: true});
             
             this.cameras.main.setBackgroundColor('0x00ff00'); //green color
-
-        // this.add.image(512, 384, 'background').setAlpha(0.5);
 
             // ---platforms---
             {
@@ -56,6 +55,7 @@ export class Game extends Scene
                         // And lastly, remove the spike tile from the layer
                         this.worldLayer.removeTileAt(tile.x, tile.y);
                     }
+                    //passable platforms
                     else if(tile.index === 26) {
                         const x = tile.getCenterX();
                         const y = tile.getCenterY();
@@ -70,10 +70,11 @@ export class Game extends Scene
                 });
 
             }
-        }
+        
         
         // The player and its settings
-        this.player = new Player(this, 100, 662);
+
+        this.player = new Player(this, 160, 660);
 
         //emote (ignores gravity and is initially invisible) {
         this.emote = this.physics.add.sprite(this.player.sprite.x, this.player.sprite.y, "emote");
@@ -86,24 +87,25 @@ export class Game extends Scene
         this.explode.setVisible(false);
 
         //  Some boxes to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
-        boxes = this.physics.add.group({
-            key: 'box',
-            repeat: 9,
-            setXY: { x: 192, y: 120, stepX: 80 }
-        });
+        boxes = this.physics.add.group();
+        boxes.create(400, 375, 'box');
+        boxes.create(512, 245, 'box');
+        boxes.create(990, 666, 'box');
 
         boxes.children.iterate(function (child) {
 
             //  Give each box a slightly different bounce
             child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
             child.setSize(24, 14).setOffset(0, 18) //resize to sprite size
+            // child.disableBody(true, true); // disable for now -----
 
         });
 
         bombs = this.physics.add.group();
+        bombs.create(111, 375, 'bomb');
 
         //  The score
-        scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' }).setColor('white');
+        scoreText = this.add.text(16, 70, 'Score: 0', { fontSize: '32px', fill: '#000' }).setColor('white');
 
         // ---Collision---
         {
@@ -139,8 +141,7 @@ export class Game extends Scene
 
         // dev skip
         // this.input.once('pointerdown', () => {
-        //     this.gameOver = true;
-        //     this.scene.start('GameOver');
+        //     this.scene.start('Game');
         // });
 
         // ---Timer---
@@ -236,27 +237,10 @@ function collectBox(player, box)
     score += 10;
     scoreText.setText('Score: ' + score);
 
+    //collect all boxes to move to next level
     if (boxes.countActive(true) === 0)
     {
-        //  A new batch of boxes to collect
-        boxes.children.iterate(function (child) {
-
-            child.enableBody(true, child.x, 120, true, true);
-
-        });
-        var x = (this.player.x < 512) ? Phaser.Math.Between(512, 832) : Phaser.Math.Between(192, 512);
-        var bomb = bombs.create(x, 120, 'bomb');
-        bomb.setSize(28,22).setOffset(0, 10); //resize to sprite size
-        bomb.setBounce(1);
-        bomb.setCollideWorldBounds(true);
-        bomb.setVelocity(Phaser.Math.Between(-160, 160), 20);
-        bomb.allowGravity = false;
-        this.emote.setVisible(true);
-        this.emote.anims.play('exclaim', true);
-        this.emote.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
-            this.emote.setVisible(false);
-        });
-
+        this.scene.start('Game');
     }
 }
 
@@ -278,7 +262,7 @@ function hitBomb (player, bomb)
 
 
     this.explode.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
-        this.scene.start('GameOver', {level: 1});
+        this.scene.start('GameOver', {level: 0});
     });
     
 }

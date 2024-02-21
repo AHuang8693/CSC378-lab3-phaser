@@ -6,6 +6,9 @@ export class GameOver extends Scene
     {
         super('GameOver');
     }
+    init (data) {
+        this.level = data.level;
+    }
 
     create ()
     {
@@ -19,16 +22,22 @@ export class GameOver extends Scene
             align: 'center'
         }).setOrigin(0.5);
 
-        var subText = this.add.text(512, 480, 'Press Any Key to Restart', {
+        var subText = this.add.text(512, 480, 'Press Space to Restart', {
             fontFamily: 'Arial Black', fontSize: 30, color: '#ffffff',
             stroke: '#000000', strokeThickness: 6,
             align: 'center'
         }).setOrigin(0.5);
 
-        this.input.keyboard.on('keydown', () => {
-            
-            this.gameOver = false;
-            this.scene.start('Game');
+        var spaceBar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
+        spaceBar.on('down', () => {
+            if(this.level==0) {
+                this.scene.start("Tutorial");
+            }
+            else if(this.level==1) {
+                this.gameOver = false;
+                this.scene.start('Game');
+            }
 
         });
     }

@@ -4,7 +4,15 @@ export class MainMenu extends Scene
 {
     constructor ()
     {
-        super('MainMenu');
+        super({
+            key: 'MainMenu',
+            physics: {
+              default: 'arcade',
+              arcade: { 
+                gravity: { y: 400 }
+              }
+            }
+          });
     }
 
     create ()
@@ -24,36 +32,32 @@ export class MainMenu extends Scene
             align: 'center'
         }).setOrigin(0.5);
 
-        this.player = this.physics.add.sprite(512, 300, 'player').setVisible(false);
-        this.player.body.setAllowGravity(false);
+        this.camObj = this.physics.add.sprite(512, 300, 'player').setVisible(false);
+        this.camObj.body.setAllowGravity(false);
 
         this.cameras.main.setBackgroundColor('black');  
         this.cameras.main.setBounds(0, 0, 1024, 1944);
-        this.cameras.main.startFollow(this.player, false, 1, 1, 0, 0);
-
-        // var zoneStart = this.add.zone(512, 2200, 1024, 1);
-        // this.physics.overlap(player, zoneStart);
+        this.cameras.main.startFollow(this.camObj, false, 1, 1, 0, 0);
 
         var zoneStart = this.physics.add.sprite(512, 1900, 'star').setVisible(false).setSize(1024, 1);
         zoneStart.body.setAllowGravity(false);
-        this.physics.add.collider(this.player, zoneStart, this.startGame, null, this);
+        this.physics.add.collider(this.camObj, zoneStart, this.startGame, null, this);
 
         var skipFlag = false;
         this.input.keyboard.on('keydown', () => {
             titleTxt.setVisible(false);
             subText.setVisible(false);
-            this.player.body.setAllowGravity(true);
+            this.camObj.body.setAllowGravity(true);
 
             //skip animation with second key press
             if(skipFlag) {
-                this.scene.start('Game');
+                this.scene.start('Tutorial');
             }
             skipFlag = true;
 
         });
     }
     startGame() {
-        console.log('test');
-        this.scene.start('Game');
+        this.scene.start('Tutorial');
     }    
 }
