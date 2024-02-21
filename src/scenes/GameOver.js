@@ -27,6 +27,7 @@ export class GameOver extends Scene
 
         this.input.keyboard.on('keydown', () => {
             
+            this.gameOver = false;
             this.scene.start('Game');
 
         });

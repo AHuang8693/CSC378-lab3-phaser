@@ -4,12 +4,9 @@ import Player from '../player.js';
 var stars;
 var bombs;
 var score = 0;
-var gameOver = false;
 var scoreText;
 
 var idleTimer;
-var worldLayer;
-var backgroundLayer;
 
 export class Game extends Scene
 {
@@ -20,17 +17,19 @@ export class Game extends Scene
         
     create ()
     {
+        this.gameOver = false;
+        
         // ---Map---
         {
             const map = this.make.tilemap({key: 'map'});
 
             const tileset  = map.addTilesetImage("IndustrialTiles", 'tiles');
 
-            backgroundLayer = map.createLayer("Background", tileset, 0, 0);
-            worldLayer = map.createLayer("World", tileset, 0, 0);
+            this.backgroundLayer = map.createLayer("Background", tileset, 0, 0);
+            this.worldLayer = map.createLayer("World", tileset, 0, 0);
             
 
-            worldLayer.setCollisionByProperty({collides: true});
+            this.worldLayer.setCollisionByProperty({collides: true});
             
             this.cameras.main.setBackgroundColor('0x00ff00'); //green color
 
@@ -41,7 +40,7 @@ export class Game extends Scene
                 //  The platforms group 
                 this.platforms = this.physics.add.staticGroup();
                 //This code looks at the tile index and replaces platform tiles with resized static objects
-                worldLayer.forEachTile(tile => {
+                this.worldLayer.forEachTile(tile => {
                     if (tile.index === 77 || tile.index === 78 || tile.index === 79) {
                         // A sprite has its origin at the center, so place the sprite at the center of the tile
                         const x = tile.getCenterX();
@@ -54,7 +53,7 @@ export class Game extends Scene
                         plat.body.setSize(32, 10).setOffset(0, 0);
 
                         // And lastly, remove the spike tile from the layer
-                        worldLayer.removeTileAt(tile.x, tile.y);
+                        this.worldLayer.removeTileAt(tile.x, tile.y);
                     }
                 });
 
@@ -77,7 +76,7 @@ export class Game extends Scene
         //  Some stars to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
         stars = this.physics.add.group({
             key: 'box',
-            repeat: 0,
+            repeat: 9,
             setXY: { x: 192, y: 120, stepX: 80 }
         });
 
@@ -92,16 +91,16 @@ export class Game extends Scene
         bombs = this.physics.add.group();
 
         //  The score
-        scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' }).setColor('white');
+        scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' }).setColor('white');
 
         // ---Collision---
         {
             //  Collide the player and the stars with map tiles
-            this.physics.add.collider(this.player.sprite, worldLayer, hitGround, null, this);
+            this.physics.add.collider(this.player.sprite, this.worldLayer, hitGround, null, this);
             this.physics.add.collider(this.player.sprite, this.platforms, hitGround, null, this);
-            this.physics.add.collider(stars, worldLayer);
+            this.physics.add.collider(stars, this.worldLayer);
             this.physics.add.collider(stars, this.platforms);
-            this.physics.add.collider(bombs, worldLayer);
+            this.physics.add.collider(bombs, this.worldLayer);
             this.physics.add.collider(bombs, this.platforms);
 
             //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
@@ -122,6 +121,12 @@ export class Game extends Scene
             this.jump = this.sound.add('jump', {volume: 0.015});
             this.explodeSound = this.sound.add('explodeSound', {volume: 0.01});
         }
+
+        // dev skip
+        // this.input.once('pointerdown', () => {
+        //     this.gameOver = true;
+        //     this.scene.start('GameOver');
+        // });
 
         // ---Timer---
         {
@@ -168,74 +173,11 @@ export class Game extends Scene
     update ()
     {
 
-        if (gameOver)
+        if (this.gameOver)
         {
             return;
         }
 
-        // // ---Player Movement---
-        // {
-            
-        //     if (cursors.left.isDown)
-        //     {
-        //         this.resetIdle();   //resets Idle timer
-        //         this.player.setFlipX(true);
-        //         this.player.setVelocityX(-160);
-        //         this.player.anims.play('run', true);
-        //         if(!this.step.isPlaying && this.player.body.blocked.down) {
-        //             this.step.play();
-        //         }
-        //     }
-        //     else if (cursors.right.isDown)
-        //     {
-        //         this.resetIdle();
-        //         this.player.setFlipX(false);
-        //         this.player.setVelocityX(160);
-        //         this.player.anims.play('run', true);
-        //         if(!this.step.isPlaying && this.player.body.blocked.down) {
-        //             this.step.play();
-        //         }
-        //     }
-        //     else //no key presses, look above in `Timer Functions` for idle logic
-        //     {
-        //         this.player.setVelocityX(0);
-        //         if (this.playerIdle) {
-        //             if(!isAsleep) {
-        //                 this.player.anims.play('sleep1');
-        //             }
-        //             else if(isAsleep) {
-        //                 this.player.anims.play('sleep2');
-        //             }
-        //         }
-        //         else {
-        //             isAsleep = false;
-        //             this.player.anims.play('idle', true)
-        //         }
-        //     }
-
-        //     //jump code
-        //     if (cursors.up.isDown && this.player.body.blocked.down) {
-        //         this.resetIdle();
-        //         this.player.setVelocityY(-330);
-        //         if(!this.jump.isPlaying && this.player.body.blocked.down) {
-        //             this.jump.play();
-        //         }
-        //     }
-
-        //     if (!this.player.body.blocked.down) {
-        //         this.inAir = true;
-        //         if (this.player.body.velocity.y < 0) { //up is negative y
-        //             this.player.anims.play('jump');
-        //         }
-        //         else if (330 >= this.player.body.velocity.y > 0) {
-        //             this.player.anims.play('fall');
-        //         }
-        //         else if (this.player.body.velocity.y > 330) {
-        //             fastFall = true;
-        //             this.player.anims.play('fallFast');
-        //         }
-        //     }
-        // }
 
         this.player.update();
         
@@ -302,7 +244,7 @@ function hitBomb (player, bomb)
     this.explode.setVisible(true);
     this.explode.anims.play('playerExplode');
 
-    gameOver = true;
+    this.gameOver = true;
 
 
     this.explode.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
