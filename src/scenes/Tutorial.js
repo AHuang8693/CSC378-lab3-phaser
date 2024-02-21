@@ -1,8 +1,6 @@
 import { Scene } from 'phaser';
 import Player from '../player.js';
 
-var boxes;
-var bombs;
 var score = 0;
 var scoreText;
 
@@ -39,7 +37,8 @@ export class Tutorial extends Scene
                 //  The platforms group 
                 this.platforms = this.physics.add.staticGroup();
                 this.platformsPass = this.physics.add.staticGroup();
-                //This code looks at the tile index and replaces platform tiles with resized static objects
+                this.signs = this.physics.add.staticGroup();
+                //This code looks at the tile index and replaces tiles with resized static objects
                 this.worldLayer.forEachTile(tile => {
                     if (tile.index === 85 || tile.index === 86 || tile.index === 87) {
                         // A sprite has its origin at the center, so place the sprite at the center of the tile
@@ -67,6 +66,12 @@ export class Tutorial extends Scene
 
                         this.worldLayer.removeTileAt(tile.x, tile.y);
                     }
+                    else if(tile.index ===91) {
+                        const x = tile.getCenterX();
+                        const y = tile.getCenterY();
+                        var sign = this.signs.create(x, y, 'box').setVisible(false);
+                        // sign.body.checkCollision = false;
+                    }
                 });
 
             }
@@ -87,12 +92,12 @@ export class Tutorial extends Scene
         this.explode.setVisible(false);
 
         //  Some boxes to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
-        boxes = this.physics.add.group();
-        boxes.create(400, 375, 'box');
-        boxes.create(512, 245, 'box');
-        boxes.create(990, 666, 'box');
+        this.boxes = this.physics.add.group();
+        this.boxes.create(400, 375, 'box');
+        this.boxes.create(512, 245, 'box');
+        this.boxes.create(990, 666, 'box');
 
-        boxes.children.iterate(function (child) {
+        this.boxes.children.iterate(function (child) {
 
             //  Give each box a slightly different bounce
             child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
@@ -101,8 +106,8 @@ export class Tutorial extends Scene
 
         });
 
-        bombs = this.physics.add.group();
-        bombs.create(111, 375, 'bomb');
+        this.bombs = this.physics.add.group();
+        this.bombs.create(111, 375, 'bomb');
 
         //  The score
         scoreText = this.add.text(16, 70, 'Score: 0', { fontSize: '32px', fill: '#000' }).setColor('white');
@@ -113,16 +118,17 @@ export class Tutorial extends Scene
             this.physics.add.collider(this.player.sprite, this.worldLayer, hitGround, null, this);
             this.physics.add.collider(this.player.sprite, this.platforms, hitGround, null, this);
             this.physics.add.collider(this.player.sprite, this.platformsPass, hitPlatPass, null, this);
-            this.physics.add.collider(boxes, this.worldLayer);
-            this.physics.add.collider(boxes, this.platforms);
-            this.physics.add.collider(boxes, this.platformsPass);
-            this.physics.add.collider(bombs, this.worldLayer);
-            this.physics.add.collider(bombs, this.platforms);
-            this.physics.add.collider(bombs, this.platformsPass);
+            this.physics.add.collider(this.boxes, this.worldLayer);
+            this.physics.add.collider(this.boxes, this.platforms);
+            this.physics.add.collider(this.boxes, this.platformsPass);
+            this.physics.add.collider(this.bombs, this.worldLayer);
+            this.physics.add.collider(this.bombs, this.platforms);
+            this.physics.add.collider(this.bombs, this.platformsPass);
 
             //  Checks to see if the player overlaps with any of the boxes, if he does call the collectBox function
-            this.physics.add.overlap(this.player.sprite, boxes, collectBox, null, this);
-            this.physics.add.collider(this.player.sprite, bombs, hitBomb, null, this);
+            this.physics.add.overlap(this.player.sprite, this.boxes, collectBox, null, this);
+            this.physics.add.collider(this.player.sprite, this.bombs, hitBomb, null, this);
+            this.physics.add.overlap(this.player.sprite, this.signs, showHint, null, this);
         }
         // ---Camera---
         {
@@ -229,8 +235,7 @@ function hitPlatPass(player, platform) {
     this.player.onPlatform = platform; //pass platform object to Player
 }
 
-function collectBox(player, box)
-{
+function collectBox(player, box) {
     box.disableBody(true, true);
 
     //  Add and update the score
@@ -238,14 +243,13 @@ function collectBox(player, box)
     scoreText.setText('Score: ' + score);
 
     //collect all boxes to move to next level
-    if (boxes.countActive(true) === 0)
+    if (this.boxes.countActive(true) === 0)
     {
         this.scene.start('Game');
     }
 }
 
-function hitBomb (player, bomb)
-{
+function hitBomb (player, bomb) {
     this.physics.pause();
     bomb.setVisible(false);
 
@@ -265,4 +269,8 @@ function hitBomb (player, bomb)
         this.scene.start('GameOver', {level: 0});
     });
     
+}
+
+function showHint(player, sign) {
+    console.log("hi");
 }
