@@ -23,7 +23,7 @@ export class Game extends Scene
         {
             const map = this.make.tilemap({key: 'map'});
 
-            const tileset  = map.addTilesetImage("IndustrialTiles", 'tiles');
+            const tileset  = map.addTilesetImage("IndustrialTilesV2", 'tiles');
 
             this.backgroundLayer = map.createLayer("Background", tileset, 0, 0);
             this.worldLayer = map.createLayer("World", tileset, 0, 0);
@@ -41,14 +41,14 @@ export class Game extends Scene
                 this.platforms = this.physics.add.staticGroup();
                 //This code looks at the tile index and replaces platform tiles with resized static objects
                 this.worldLayer.forEachTile(tile => {
-                    if (tile.index === 77 || tile.index === 78 || tile.index === 79) {
+                    if (tile.index === 85 || tile.index === 86 || tile.index === 87) {
                         // A sprite has its origin at the center, so place the sprite at the center of the tile
                         const x = tile.getCenterX();
                         const y = tile.getCenterY();
                         var plat;
-                        if(tile.index === 77) {plat = this.platforms.create(x, y, "plat1");}
-                        else if(tile.index === 78) {plat = this.platforms.create(x, y, "plat2");}
-                        else if(tile.index === 79) {plat = this.platforms.create(x, y, "plat3");}
+                        if(tile.index === 85) {plat = this.platforms.create(x, y, "plat1");}
+                        else if(tile.index === 86) {plat = this.platforms.create(x, y, "plat2");}
+                        else if(tile.index === 87) {plat = this.platforms.create(x, y, "plat3");}
 
                         plat.body.setSize(32, 10).setOffset(0, 0);
 
