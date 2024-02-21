@@ -275,4 +275,5 @@ function hitBomb (player, bomb) {
 
 function showHint(player, sign) {
     console.log("hi");
+    //TO-DO, finish hint signs, move/change score text in Game.js, cutscene
 }
