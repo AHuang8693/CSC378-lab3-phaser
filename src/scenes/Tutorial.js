@@ -37,7 +37,6 @@ export class Tutorial extends Scene
                 //  The platforms group 
                 this.platforms = this.physics.add.staticGroup();
                 this.platformsPass = this.physics.add.staticGroup();
-                this.signs = this.physics.add.staticGroup();
                 //This code looks at the tile index and replaces tiles with resized static objects
                 this.worldLayer.forEachTile(tile => {
                     if (tile.index === 85 || tile.index === 86 || tile.index === 87) {
@@ -66,12 +65,6 @@ export class Tutorial extends Scene
 
                         this.worldLayer.removeTileAt(tile.x, tile.y);
                     }
-                    else if(tile.index ===91) {
-                        const x = tile.getCenterX();
-                        const y = tile.getCenterY();
-                        var sign = this.signs.create(x, y, 'box').setVisible(false);
-                        // sign.body.checkCollision = false;
-                    }
                 });
 
             }
@@ -91,7 +84,7 @@ export class Tutorial extends Scene
         this.explode.body.setAllowGravity(false);
         this.explode.setVisible(false);
 
-        //  Some boxes to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
+        //  Some boxes to collect, 3 in total
         this.boxes = this.physics.add.group();
         this.boxes.create(400, 375, 'box');
         this.boxes.create(512, 245, 'box');
@@ -108,6 +101,15 @@ export class Tutorial extends Scene
 
         this.bombs = this.physics.add.group();
         this.bombs.create(111, 375, 'bomb');
+
+        this.signs = this.physics.add.staticGroup();
+        this.signs.create(464, 656, 'box');
+        this.signs.create(272, 368, 'box');
+        this.signs.create(752, 240, 'box');
+
+        this.signs.children.iterate(function (child) {
+            child.setSize(32, 32).setVisible(false);
+        });
 
         //  The score
         scoreText = this.add.text(16, 70, 'Score: 0', { fontSize: '32px', fill: '#000' }).setColor('white');
