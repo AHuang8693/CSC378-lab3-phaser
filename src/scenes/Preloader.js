@@ -61,6 +61,13 @@ export class Preloader extends Scene
     {
         //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
         //  For example, you can define global animations here, so we can use them in other scenes.
+        var player;
+        var platforms;
+        var emote;
+        var explode;
+
+        var inAir = true;
+        var playerIdle = false;
 
         //  Our player animations, still, walking, jumping, and idle
         this.anims.create({

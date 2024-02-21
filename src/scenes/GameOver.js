@@ -26,7 +26,7 @@ export class GameOver extends Scene
         }).setOrigin(0.5);
 
         this.input.keyboard.on('keydown', () => {
-
+            
             this.scene.start('Game');
 
         });

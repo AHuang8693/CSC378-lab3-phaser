@@ -1,10 +1,5 @@
 import { Scene } from 'phaser';
 
-// var titleText;
-// var subText;
-var player;
-var zoneStart; 
-
 export class MainMenu extends Scene
 {
     constructor ()
@@ -29,25 +24,25 @@ export class MainMenu extends Scene
             align: 'center'
         }).setOrigin(0.5);
 
-        player = this.physics.add.sprite(512, 300, 'player').setVisible(false);
-        player.body.setAllowGravity(false);
+        this.player = this.physics.add.sprite(512, 300, 'player').setVisible(false);
+        this.player.body.setAllowGravity(false);
 
         this.cameras.main.setBackgroundColor('black');  
         this.cameras.main.setBounds(0, 0, 1024, 1944);
-        this.cameras.main.startFollow(player, false, 1, 1, 0, 0);
+        this.cameras.main.startFollow(this.player, false, 1, 1, 0, 0);
 
         // var zoneStart = this.add.zone(512, 2200, 1024, 1);
         // this.physics.overlap(player, zoneStart);
 
-        zoneStart = this.physics.add.sprite(512, 1900, 'star').setVisible(false).setSize(1024, 1);
+        var zoneStart = this.physics.add.sprite(512, 1900, 'star').setVisible(false).setSize(1024, 1);
         zoneStart.body.setAllowGravity(false);
-        this.physics.add.collider(player, zoneStart, this.startGame, null, this);
+        this.physics.add.collider(this.player, zoneStart, this.startGame, null, this);
 
         var skipFlag = false;
         this.input.keyboard.on('keydown', () => {
             titleTxt.setVisible(false);
             subText.setVisible(false);
-            player.body.setAllowGravity(true);
+            this.player.body.setAllowGravity(true);
 
             //skip animation with second key press
             if(skipFlag) {
