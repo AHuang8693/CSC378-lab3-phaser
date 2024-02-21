@@ -1,7 +1,7 @@
 import { Scene } from 'phaser';
 import Player from '../player.js';
 
-var stars;
+var boxes;
 var bombs;
 var score = 0;
 var scoreText;
@@ -39,6 +39,7 @@ export class Game extends Scene
             {
                 //  The platforms group 
                 this.platforms = this.physics.add.staticGroup();
+                this.platformsPass = this.physics.add.staticGroup();
                 //This code looks at the tile index and replaces platform tiles with resized static objects
                 this.worldLayer.forEachTile(tile => {
                     if (tile.index === 85 || tile.index === 86 || tile.index === 87) {
@@ -53,6 +54,17 @@ export class Game extends Scene
                         plat.body.setSize(32, 10).setOffset(0, 0);
 
                         // And lastly, remove the spike tile from the layer
+                        this.worldLayer.removeTileAt(tile.x, tile.y);
+                    }
+                    else if(tile.index === 26) {
+                        const x = tile.getCenterX();
+                        const y = tile.getCenterY();
+                        var plat = this.platformsPass.create(x, y, "platPass");
+                        plat.body.setSize(32, 10).setOffset(0, 0);
+                        plat.body.checkCollision.down = false;
+                        plat.body.checkCollision.left = false;
+                        plat.body.checkCollision.right = false;
+
                         this.worldLayer.removeTileAt(tile.x, tile.y);
                     }
                 });
@@ -73,14 +85,14 @@ export class Game extends Scene
         this.explode.body.setAllowGravity(false);
         this.explode.setVisible(false);
 
-        //  Some stars to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
-        stars = this.physics.add.group({
+        //  Some boxes to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
+        boxes = this.physics.add.group({
             key: 'box',
             repeat: 9,
             setXY: { x: 192, y: 120, stepX: 80 }
         });
 
-        stars.children.iterate(function (child) {
+        boxes.children.iterate(function (child) {
 
             //  Give each star a slightly different bounce
             child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
@@ -95,16 +107,19 @@ export class Game extends Scene
 
         // ---Collision---
         {
-            //  Collide the player and the stars with map tiles
+            //  Collide the player and the boxes with map tiles
             this.physics.add.collider(this.player.sprite, this.worldLayer, hitGround, null, this);
             this.physics.add.collider(this.player.sprite, this.platforms, hitGround, null, this);
-            this.physics.add.collider(stars, this.worldLayer);
-            this.physics.add.collider(stars, this.platforms);
+            this.physics.add.collider(this.player.sprite, this.platformsPass, hitPlatPass, null, this);
+            this.physics.add.collider(boxes, this.worldLayer);
+            this.physics.add.collider(boxes, this.platforms);
+            this.physics.add.collider(boxes, this.platformsPass);
             this.physics.add.collider(bombs, this.worldLayer);
             this.physics.add.collider(bombs, this.platforms);
+            this.physics.add.collider(bombs, this.platformsPass);
 
-            //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
-            this.physics.add.overlap(this.player.sprite, stars, collectStar, null, this);
+            //  Checks to see if the player overlaps with any of the boxes, if he does call the collectStar function
+            this.physics.add.overlap(this.player.sprite, boxes, collectStar, null, this);
             this.physics.add.collider(this.player.sprite, bombs, hitBomb, null, this);
         }
         // ---Camera---
@@ -163,9 +178,9 @@ export class Game extends Scene
             this.emote.setVisible(true);
             this.emote.anims.play('ellipsis', true);
             this.emote.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
-                    this.emote.setVisible(false);
-                    this.sleepEmoteTimer.reset({ delay: 5000, callback: this.onSleepEmote, callbackScope: this});
-                    this.time.addEvent(this.sleepEmoteTimer);
+                this.emote.setVisible(false);
+                this.sleepEmoteTimer.reset({ delay: 5000, callback: this.onSleepEmote, callbackScope: this});
+                this.time.addEvent(this.sleepEmoteTimer);
             });
         }
     }
@@ -181,7 +196,6 @@ export class Game extends Scene
 
         this.player.update();
         
-        
         // emote sprite follows player
         this.emote.setX(this.player.sprite.x);
         this.emote.setY(this.player.sprite.y - 40);
@@ -193,12 +207,25 @@ export class Game extends Scene
 }
 
 function hitGround (player, worldLayer) {
+    //if makes sure we're touching the ground, othewise sound would trigger on walls
+    if (this.player.sprite.body.blocked.down){
+        //makes sure it only plays on a landing once
+        if (this.player.inAir) {
+            this.player.inAir = false;
+            this.landing.play();
+        }
+    }
+}
+
+function hitPlatPass(player, platform) {
     if (this.player.sprite.body.blocked.down){
         if (this.player.inAir) {
             this.player.inAir = false;
             this.landing.play();
         }
     }
+    this.player.isOnPlatformPass = true;
+    this.player.onPlatform = platform; //pass platform object to Player
 }
 
 function collectStar(player, star)
@@ -209,23 +236,26 @@ function collectStar(player, star)
     score += 10;
     scoreText.setText('Score: ' + score);
 
-    if (stars.countActive(true) === 0)
+    if (boxes.countActive(true) === 0)
     {
-        //  A new batch of stars to collect
-        stars.children.iterate(function (child) {
+        //  A new batch of boxes to collect
+        boxes.children.iterate(function (child) {
 
             child.enableBody(true, child.x, 120, true, true);
 
         });
-
         var x = (this.player.x < 512) ? Phaser.Math.Between(512, 832) : Phaser.Math.Between(192, 512);
-
         var bomb = bombs.create(x, 120, 'bomb');
         bomb.setSize(28,22).setOffset(0, 10); //resize to sprite size
         bomb.setBounce(1);
         bomb.setCollideWorldBounds(true);
         bomb.setVelocity(Phaser.Math.Between(-160, 160), 20);
         bomb.allowGravity = false;
+        this.emote.setVisible(true);
+        this.emote.anims.play('exclaim', true);
+        this.emote.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
+            this.emote.setVisible(false);
+        });
 
     }
 }

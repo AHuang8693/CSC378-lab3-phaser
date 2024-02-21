@@ -45,6 +45,7 @@ export class Preloader extends Scene
         this.load.image('plat1', "IndustrialTile_77.png");
         this.load.image('plat2', "IndustrialTile_78.png");
         this.load.image('plat3', "IndustrialTile_79.png");
+        this.load.image('platPass', "IndustrialTile_18.png");
 
         this.load.setPath('assets/industrial-zone/3 Objects');
         this.load.image('box', 'Box4.png');

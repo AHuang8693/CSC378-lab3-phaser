@@ -65,6 +65,9 @@ export default class Player {
         this.sprite = scene.physics.add.sprite(x, y, 'player').setCollideWorldBounds(true).setSize(36, 39).setOffset(0, 8);
 
         this.cursors = scene.input.keyboard.createCursorKeys();
+
+        this.onPlatform; //stores platform object. See "platformPass code"
+        this.isOnPlatformPass = false;
     }
 
     create(){
@@ -81,7 +84,7 @@ export default class Player {
             {
                 this.scene.resetIdle();   //resets Idle timer
                 sprite.setFlipX(true);
-                sprite.setVelocityX(-160);
+                sprite.setVelocityX(-170);
                 sprite.anims.play('run', true);
                 if(!this.scene.step.isPlaying && sprite.body.blocked.down) {
                     this.scene.step.play();
@@ -91,7 +94,7 @@ export default class Player {
             {
                 this.scene.resetIdle();
                 sprite.setFlipX(false);
-                sprite.setVelocityX(160);
+                sprite.setVelocityX(170);
                 sprite.anims.play('run', true);
                 if(!this.scene.step.isPlaying && sprite.body.blocked.down) {
                     this.scene.step.play();
@@ -116,13 +119,29 @@ export default class Player {
 
             //jump code
             if (cursors.up.isDown && sprite.body.blocked.down) {
-                // this.resetIdle();
+                this.scene.resetIdle();
                 sprite.setVelocityY(-330);
-                if(!this.scene.jump.isPlaying && sprite.body.blocked.down) {
+                if(!this.scene.jump.isPlaying) {
                     this.scene.jump.play();
+                }
+                //if player touches a passable platform and jumps, all platforms will have collision restored
+                //uses platformPass staticGroup from this.scene. This fixes issue with dropping from one passable plat to another, but restoring incorrect platform's collision
+                if (this.isOnPlatformPass) {
+                    this.isOnPlatformPass = false;
+                    this.onPlatform = null;
+                    this.scene.platformsPass.children.iterate(function (child) {
+                        child.body.checkCollision.up = true;
+                    })
                 }
             }
 
+            //down, platformPass code
+            if (this.cursors.down.isDown && this.isOnPlatformPass) {
+                this.scene.resetIdle();
+                this.onPlatform.body.checkCollision.up = false;
+            }
+            
+            //fall code
             if (!sprite.body.blocked.down) {
                 this.inAir = true;
                 if (sprite.body.velocity.y < 0) { //up is negative y
