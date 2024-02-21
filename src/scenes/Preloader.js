@@ -61,70 +61,12 @@ export class Preloader extends Scene
     {
         //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
         //  For example, you can define global animations here, so we can use them in other scenes.
-        var player;
+        // var player;
         var platforms;
         var emote;
         var explode;
 
         var inAir = true;
-        var playerIdle = false;
-
-        //  Our player animations, still, walking, jumping, and idle
-        this.anims.create({
-            key: 'run',
-            frames: this.anims.generateFrameNumbers('player', { start: 9, end: 13 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'still',
-            frames: [ { key: 'player', frame: 0 } ],
-            frameRate: 20
-        });
-
-        this.anims.create({
-            key: 'idle',
-            frames: this.anims.generateFrameNumbers('player', { start: 0, end: 2 }),
-            frameRate: 5,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'sleep1',
-            frames: [ { key: 'player', frame: 18} ],
-            frameRate: 1
-        });
-        
-        this.anims.create({
-            key: 'sleep2',
-            frames: [ { key: 'player', frame: 19} ],
-            frameRate: 1
-        });
-
-        this.anims.create({
-            key: 'jump',
-            frames: [ { key: 'player', frame: 3 } ],
-            frameRate: 20
-        });
-
-        this.anims.create({
-            key: 'fall',
-            frames: [ { key: 'player', frame: 4 } ],
-            frameRate: 20
-        });
-
-        this.anims.create({
-            key: 'fallFast',
-            frames: [ { key: 'player', frame: 5 } ],
-            frameRate: 20
-        });
-
-        this.anims.create({
-            key: 'impact',
-            frames: this.anims.generateFrameNumbers('player', { start: 6, end: 7 }),
-            frameRate: 4
-        });
 
         // explode animation
         this.anims.create({
