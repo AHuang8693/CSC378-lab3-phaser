@@ -17,6 +17,7 @@ export class Game extends Scene
         
     create ()
     {
+        score = 0;
         this.gameOver = false;
         
         // ---Map---
@@ -103,7 +104,7 @@ export class Game extends Scene
         bombs = this.physics.add.group();
 
         //  The score
-        scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' }).setColor('white');
+        scoreText = this.add.text(16, 0, 'Score: 0', { fontSize: '32px', fill: '#000' }).setColor('white');
 
         // ---Collision---
         {
@@ -116,7 +117,7 @@ export class Game extends Scene
             this.physics.add.collider(boxes, this.platformsPass);
             this.physics.add.collider(bombs, this.worldLayer);
             this.physics.add.collider(bombs, this.platforms);
-            this.physics.add.collider(bombs, this.platformsPass);
+            // this.physics.add.collider(bombs, this.platformsPass);
 
             //  Checks to see if the player overlaps with any of the boxes, if he does call the collectBox function
             this.physics.add.overlap(this.player.sprite, boxes, collectBox, null, this);

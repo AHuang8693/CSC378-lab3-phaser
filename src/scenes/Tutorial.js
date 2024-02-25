@@ -1,10 +1,7 @@
 import { Scene } from 'phaser';
 import Player from '../player.js';
 
-var score = 0;
-var scoreText;
-
-var idleTimer;
+var temp = 0;
 
 export class Tutorial extends Scene
 {
@@ -86,6 +83,7 @@ export class Tutorial extends Scene
 
         //  Some boxes to collect, 3 in total
         this.boxes = this.physics.add.group();
+        this.boxes.create(464, 656, 'box');
         this.boxes.create(400, 375, 'box');
         this.boxes.create(512, 245, 'box');
         this.boxes.create(990, 666, 'box');
@@ -102,17 +100,29 @@ export class Tutorial extends Scene
         this.bombs = this.physics.add.group();
         this.bombs.create(111, 375, 'bomb');
 
+        //---Hint Sign---
         this.signs = this.physics.add.staticGroup();
-        this.signs.create(464, 656, 'box');
-        this.signs.create(272, 368, 'box');
-        this.signs.create(752, 240, 'box');
+        this.sign1 = this.signs.create(336, 656, 'box');
+        this.sign2 = this.signs.create(272, 368, 'box');
+        this.sign3 = this.signs.create(752, 240, 'box');
 
         this.signs.children.iterate(function (child) {
             child.setSize(32, 32).setVisible(false);
         });
 
-        //  The score
-        scoreText = this.add.text(16, 70, 'Score: 0', { fontSize: '32px', fill: '#000' }).setColor('white');
+        var textConfig = {fontSize:'20px', color:'white', fontFamily: 'Graviton'};
+        this.hintSign1 =  this.add.rectangle(77, 556, 550, 50, 0x008000).setOrigin(0);
+        this.hintSign1Text = this.add.text(87, 560, 'Uh oh, looks like factory pipes have broken! Time to get to work.\nUse arrows keys to move and jump. Collect all the boxes you can!', textConfig).setOrigin(0);
+        this.hintSign2 =  this.add.rectangle(63, 268, 415, 50, 0x008000).setOrigin(0);
+        this.hintSign2Text = this.add.text(73, 270, 'Look like some explosive packages got mixed in.\n                  Careful not to touch them!', textConfig).setOrigin(0);
+        this.hintSign3 =  this.add.rectangle(559, 140, 390, 50, 0x008000).setOrigin(0);
+        this.hintSign3Text = this.add.text(569, 142, ' Press down to drop through these platforms.\nBombs pass right through them, so be careful!', textConfig).setOrigin(0);
+        this.hintSign1.alpha = 0;
+        this.hintSign1Text.alpha=0;
+        this.hintSign2.alpha = 0;
+        this.hintSign2Text.alpha=0;
+        this.hintSign3.alpha = 0;
+        this.hintSign3Text.alpha=0;
 
         // ---Collision---
         {
@@ -125,9 +135,9 @@ export class Tutorial extends Scene
             this.physics.add.collider(this.boxes, this.platformsPass);
             this.physics.add.collider(this.bombs, this.worldLayer);
             this.physics.add.collider(this.bombs, this.platforms);
-            this.physics.add.collider(this.bombs, this.platformsPass);
+            // this.physics.add.collider(this.bombs, this.platformsPass);
 
-            //  Checks to see if the player overlaps with any of the boxes, if he does call the collectBox function
+            //  Checks to see if the player overlaps with any of the boxes, if they do call the collectBox function
             this.physics.add.overlap(this.player.sprite, this.boxes, collectBox, null, this);
             this.physics.add.collider(this.player.sprite, this.bombs, hitBomb, null, this);
             this.physics.add.overlap(this.player.sprite, this.signs, showHint, null, this);
@@ -157,6 +167,7 @@ export class Tutorial extends Scene
             this.idleTimer = this.time.addEvent({ delay: 5000, callback: this.onIdle, callbackScope: this});
             this.sleepTimer = new Phaser.Time.TimerEvent({ delay: 2000, callback: this.onSleep, callbackScope: this});
             this.sleepEmoteTimer = new Phaser.Time.TimerEvent({ delay: 5000, callback: this.onSleepEmote, callbackScope: this});
+            this.hintTimer = new Phaser.Time.TimerEvent({ delay: 250, callback: this.onHint, callbackScope: this});
         }
         
     }
@@ -193,6 +204,33 @@ export class Tutorial extends Scene
             });
         }
     }
+    onHint() {
+        temp = 0;
+        if(this.hintSign1.alpha != 0) { 
+            this.tweens.add({
+                targets: [this.hintSign1, this.hintSign1Text],
+                alpha: {from:1, to:0},
+                repeat: 0,
+                duration: 500
+            });
+        }
+        if(this.hintSign2.alpha != 0) { 
+            this.tweens.add({
+                targets: [this.hintSign2, this.hintSign2Text],
+                alpha: {from:1, to:0},
+                repeat: 0,
+                duration: 500
+            });
+        }
+        if(this.hintSign3.alpha != 0) { 
+            this.tweens.add({
+                targets: [this.hintSign3, this.hintSign3Text],
+                alpha: {from:1, to:0},
+                repeat: 0,
+                duration: 500
+            });
+        }
+    }
 
     update ()
     {
@@ -211,6 +249,7 @@ export class Tutorial extends Scene
         //same for explosion object
         this.explode.setX(this.player.sprite.x);
         this.explode.setY(this.player.sprite.y);
+
     }
     
 }
@@ -239,10 +278,6 @@ function hitPlatPass(player, platform) {
 
 function collectBox(player, box) {
     box.disableBody(true, true);
-
-    //  Add and update the score
-    score += 10;
-    scoreText.setText('Score: ' + score);
 
     //collect all boxes to move to next level
     if (this.boxes.countActive(true) === 0)
@@ -274,6 +309,34 @@ function hitBomb (player, bomb) {
 }
 
 function showHint(player, sign) {
-    console.log("hi");
-    //TO-DO, finish hint signs, move/change score text in Game.js, cutscene
+    this.hintTimer.reset({ delay: 250, callback: this.onHint, callbackScope: this});
+    this.time.addEvent(this.hintTimer);
+    if(sign == this.sign1 && temp == 0) {
+        temp = 1;
+        this.tweens.add({
+            targets: [this.hintSign1, this.hintSign1Text],
+            alpha: {from:0, to:1},
+            repeat: 0,
+            duration: 500
+        })
+    }
+    if(sign == this.sign2 && temp == 0) {
+        temp = 1;
+        this.tweens.add({
+            targets: [this.hintSign2, this.hintSign2Text],
+            alpha: {from:0, to:1},
+            repeat: 0,
+            duration: 500
+        })
+    }
+    if(sign == this.sign3 && temp == 0) {
+        temp = 1;
+        this.tweens.add({
+            targets: [this.hintSign3, this.hintSign3Text],
+            alpha: {from:0, to:1},
+            repeat: 0,
+            duration: 500
+        })
+    }
+        
 }
