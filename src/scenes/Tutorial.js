@@ -1,7 +1,8 @@
 import { Scene } from 'phaser';
 import Player from '../player.js';
 
-var temp = 0;
+//prevents tweens from repeating in later code, which would hide the signs
+var canReadSign = true;
 
 export class Tutorial extends Scene
 {
@@ -101,6 +102,8 @@ export class Tutorial extends Scene
         this.bombs.create(111, 375, 'bomb');
 
         //---Hint Sign---
+        {
+        //invisible collision bodies to trigger sign code
         this.signs = this.physics.add.staticGroup();
         this.sign1 = this.signs.create(336, 656, 'box');
         this.sign2 = this.signs.create(272, 368, 'box');
@@ -110,6 +113,7 @@ export class Tutorial extends Scene
             child.setSize(32, 32).setVisible(false);
         });
 
+        //the actualy background & text of signs, set invisible initially
         var textConfig = {fontSize:'20px', color:'white', fontFamily: 'Graviton'};
         this.hintSign1 =  this.add.rectangle(77, 556, 550, 50, 0x008000).setOrigin(0);
         this.hintSign1Text = this.add.text(87, 560, 'Uh oh, looks like factory pipes have broken! Time to get to work.\nUse arrows keys to move and jump. Collect all the boxes you can!', textConfig).setOrigin(0);
@@ -123,6 +127,7 @@ export class Tutorial extends Scene
         this.hintSign2Text.alpha=0;
         this.hintSign3.alpha = 0;
         this.hintSign3Text.alpha=0;
+        }
 
         // ---Collision---
         {
@@ -204,8 +209,9 @@ export class Tutorial extends Scene
             });
         }
     }
+    //resets the canReadSign var, and makes sign text invisible
     onHint() {
-        temp = 0;
+        canReadSign = true;
         if(this.hintSign1.alpha != 0) { 
             this.tweens.add({
                 targets: [this.hintSign1, this.hintSign1Text],
@@ -311,32 +317,33 @@ function hitBomb (player, bomb) {
 function showHint(player, sign) {
     this.hintTimer.reset({ delay: 250, callback: this.onHint, callbackScope: this});
     this.time.addEvent(this.hintTimer);
-    if(sign == this.sign1 && temp == 0) {
-        temp = 1;
-        this.tweens.add({
-            targets: [this.hintSign1, this.hintSign1Text],
-            alpha: {from:0, to:1},
-            repeat: 0,
-            duration: 500
-        })
-    }
-    if(sign == this.sign2 && temp == 0) {
-        temp = 1;
-        this.tweens.add({
-            targets: [this.hintSign2, this.hintSign2Text],
-            alpha: {from:0, to:1},
-            repeat: 0,
-            duration: 500
-        })
-    }
-    if(sign == this.sign3 && temp == 0) {
-        temp = 1;
-        this.tweens.add({
-            targets: [this.hintSign3, this.hintSign3Text],
-            alpha: {from:0, to:1},
-            repeat: 0,
-            duration: 500
-        })
+    if(canReadSign) {
+        //prevents tweens from repeating
+        canReadSign = false;
+        if(sign == this.sign1) {
+            this.tweens.add({
+                targets: [this.hintSign1, this.hintSign1Text],
+                alpha: {from:0, to:1},
+                repeat: 0,
+                duration: 500
+            })
+        }
+        if(sign == this.sign2) {
+            this.tweens.add({
+                targets: [this.hintSign2, this.hintSign2Text],
+                alpha: {from:0, to:1},
+                repeat: 0,
+                duration: 500
+            })
+        }
+        if(sign == this.sign3) {
+            this.tweens.add({
+                targets: [this.hintSign3, this.hintSign3Text],
+                alpha: {from:0, to:1},
+                repeat: 0,
+                duration: 500
+            })
+        }
     }
         
 }
