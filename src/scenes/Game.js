@@ -287,7 +287,7 @@ function hitBomb (player, bomb)
 
 
     this.explode.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
-        this.scene.start('GameOver', {level: 1});
+        this.scene.start('GameOver', {level: 1, score: score});
     });
     
 }

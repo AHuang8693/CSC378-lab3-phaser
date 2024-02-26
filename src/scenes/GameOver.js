@@ -12,13 +12,11 @@ export class GameOver extends Scene
     }
     init (data) {
         this.level = data.level;
+        this.score = data.score;
     }
 
     create ()
     {
-        this.gameOverMusic = this.sound.add("gameOverMusic");
-        this.gameOverMusic.play({volume: 0.04});
-
         this.cameras.main.setBackgroundColor(0xff0000);
 
         this.add.image(512, 384, 'background').setAlpha(0.5);
@@ -29,11 +27,19 @@ export class GameOver extends Scene
             align: 'center'
         }).setOrigin(0.5);
 
-        var subText = this.add.text(512, 480, 'Press Space to Restart', {
+        var subText = this.add.text(512, 490, 'Press Space to Restart', {
             fontFamily: 'Arial Black', fontSize: 30, color: '#ffffff',
             stroke: '#000000', strokeThickness: 6,
             align: 'center'
         }).setOrigin(0.5);
+
+        var scoreText = this.add.text(512, 445, 'Score: ' + this.score, {
+            fontFamily: 'Arial Black', fontSize: 30, color: '#ffffff',
+            stroke: '#000000', strokeThickness: 6,
+            align: 'center'
+        }).setOrigin(0.5);
+
+        if(this.score == undefined) {scoreText.setVisible(false)}
 
         var credits = this.add.text(70, 740, 'Credits', {
             fontFamily: 'Arial Black', fontSize: 30, color: '#ffffff',
@@ -73,9 +79,17 @@ export class GameOver extends Scene
                 toolTipText.y = pointer.y - 135;
             });
         }
-        var spaceBar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
+        //play game over music
+        this.gameOverMusic = this.sound.add("gameOverMusic");
+        this.gameOverMusic.play({volume: 0.04});
+
+        var spaceBar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         spaceBar.on('down', () => {
+            //stop game over music
+            if(this.gameOverMusic.isPlaying) {
+                this.gameOverMusic.stop();
+            }
             if(this.level==0) {
                 this.scene.start("Tutorial");
             }
