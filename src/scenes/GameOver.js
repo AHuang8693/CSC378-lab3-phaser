@@ -16,6 +16,9 @@ export class GameOver extends Scene
 
     create ()
     {
+        this.gameOverMusic = this.sound.add("gameOverMusic");
+        this.gameOverMusic.play({volume: 0.04});
+
         this.cameras.main.setBackgroundColor(0xff0000);
 
         this.add.image(512, 384, 'background').setAlpha(0.5);
@@ -43,8 +46,8 @@ export class GameOver extends Scene
             objectWithToolTip = this.add.rectangle(70, 740, 150, 60, 0xffffff).setInteractive();
             objectWithToolTip.fillAlpha = 0;
 
-            toolTip =  this.add.rectangle( 0, 0, 835, 120, 0xffffff).setOrigin(0);
-            toolTipText = this.add.text( 0, 0, 'Packerman by Andy Huang\nMade with Phaser3\nopengameart.org - Green Robot, Animated Emote Bubbles, Platformer Sounds (landing.ogg),\n    8-Bit Platformer SFX, Warped City (Explosion Sprites), 8-Bit Sound Effects Library\nCraftPix.net - Free Industiral Zone Tileset', { fontFamily: 'Arial', fontSize: 20, color: '#000' }).setOrigin(0);
+            toolTip =  this.add.rectangle( 0, 0, 835, 140, 0xffffff).setOrigin(0);
+            toolTipText = this.add.text( 0, 0, 'Packerman by Andy Huang\nMade with Phaser3\nopengameart.org - Green Robot, Animated Emote Bubbles, Platformer Sounds (landing.ogg),\n    8-Bit Platformer SFX, Warped City (Explosion Sprites), 8-Bit Sound Effects Library,\n    Overworld Select - 8-bit Gameboy Track\nCraftPix.net - Free Industiral Zone Tileset', { fontFamily: 'Arial', fontSize: 20, color: '#000' }).setOrigin(0);
             toolTip.alpha = 0;
             toolTipText.alpha = 0;
         
@@ -65,9 +68,9 @@ export class GameOver extends Scene
             
             objectWithToolTip.on('pointermove', function (pointer) {
                 toolTip.x = pointer.x + 2;
-                toolTip.y = pointer.y - 120;
+                toolTip.y = pointer.y - 140;
                 toolTipText.x = pointer.x + 7;
-                toolTipText.y = pointer.y - 115;
+                toolTipText.y = pointer.y - 135;
             });
         }
         var spaceBar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);

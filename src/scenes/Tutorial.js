@@ -161,6 +161,8 @@ export class Tutorial extends Scene
             this.jump = this.sound.add('jump', {volume: 0.015});
             this.explodeSound = this.sound.add('explodeSound', {volume: 0.015});
             this.pickUp = this.sound.add('pickUp', {volume: 0.025});
+
+            this.firstLanding = true;
         }
 
         // dev skip
@@ -267,7 +269,8 @@ function hitGround (player, worldLayer) {
         //makes sure it only plays on a landing once
         if (this.player.inAir) {
             this.player.inAir = false;
-            this.landing.play();
+            if(this.firstLanding) {this.firstLanding = false;}
+            else {this.landing.play();}
         }
     }
 }
