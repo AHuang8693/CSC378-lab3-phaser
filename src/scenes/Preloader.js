@@ -58,7 +58,8 @@ export class Preloader extends Scene
         this.load.audio("jump", "Jump.wav");
         this.load.audio("explodeSound", "Explosion2.wav");
         this.load.audio("pickUp", "Pickup_00.mp3");
-        this.load.audio("gameOverMusic", "Jingle_Lose_00.mp3")
+        this.load.audio("spawnBoxes", "Pickup_03.mp3");
+        this.load.audio("gameOverMusic", "Jingle_Lose_00.mp3");
     }
 
     create ()

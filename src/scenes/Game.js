@@ -137,6 +137,7 @@ export class Game extends Scene
             this.jump = this.sound.add('jump', {volume: 0.015});
             this.explodeSound = this.sound.add('explodeSound', {volume: 0.015});
             this.pickUp = this.sound.add('pickUp', {volume: 0.025});
+            this.spawnBoxes = this.sound.add('spawnBoxes', {volume: 0.05});
 
             this.firstLanding = true;
         }
@@ -250,8 +251,10 @@ function collectBox(player, box)
             child.enableBody(true, child.x, 120, true, true);
 
         });
+        this.spawnBoxes.play();
+        // spawn bomb
         var x = (this.player.x < 512) ? Phaser.Math.Between(512, 832) : Phaser.Math.Between(192, 512);
-        var bomb = bombs.create(x, 120, 'bomb');
+        var bomb = bombs.create(x, 100, 'bomb');
         bomb.setSize(28,22).setOffset(0, 10); //resize to sprite size
         bomb.setBounce(1);
         bomb.setCollideWorldBounds(true);
