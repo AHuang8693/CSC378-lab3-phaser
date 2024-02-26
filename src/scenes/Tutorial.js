@@ -172,9 +172,9 @@ export class Tutorial extends Scene
 
         // ---Timer---
         {
-            this.idleTimer = this.time.addEvent({ delay: 5000, callback: this.onIdle, callbackScope: this});
+            this.idleTimer = this.time.addEvent({ delay: 4000, callback: this.onIdle, callbackScope: this});
             this.sleepTimer = new Phaser.Time.TimerEvent({ delay: 2000, callback: this.onSleep, callbackScope: this});
-            this.sleepEmoteTimer = new Phaser.Time.TimerEvent({ delay: 5000, callback: this.onSleepEmote, callbackScope: this});
+            this.sleepEmoteTimer = new Phaser.Time.TimerEvent({ delay: 4000, callback: this.onSleepEmote, callbackScope: this});
             this.hintTimer = new Phaser.Time.TimerEvent({ delay: 250, callback: this.onHint, callbackScope: this});
         }
         
@@ -182,9 +182,9 @@ export class Tutorial extends Scene
     // ---Timer Functions---
     //restarts idle related timers and marks player as not idle. Function is called when a movement key is pressed
     resetIdle() {
-        this.idleTimer.reset({ delay: 5000, callback: this.onIdle, callbackScope: this});
+        this.idleTimer.reset({ delay: 4000, callback: this.onIdle, callbackScope: this});
         this.sleepTimer.reset({ delay: 2000, callback: this.onSleep, callbackScope: this});
-        this.sleepEmoteTimer.reset({ delay: 5000, callback: this.onSleepEmote, callbackScope: this});
+        this.sleepEmoteTimer.reset({ delay: 4000, callback: this.onSleepEmote, callbackScope: this});
         this.time.addEvent(this.idleTimer);
         this.player.playerIdle = false;
     }
@@ -197,7 +197,7 @@ export class Tutorial extends Scene
     onSleep() {
         this.player.isAsleep = true;
         //another reset here because the one in resetIdle() doesn't seem to stop this timer in-progress for some reason
-        this.sleepEmoteTimer.reset({ delay: 5000, callback: this.onSleepEmote, callbackScope: this});
+        this.sleepEmoteTimer.reset({ delay: 4000, callback: this.onSleepEmote, callbackScope: this});
         this.time.addEvent(this.sleepEmoteTimer);
     }
     //For playing the waiting emote while sleeping
@@ -207,7 +207,7 @@ export class Tutorial extends Scene
             this.emote.anims.play('ellipsis', true);
             this.emote.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
                 this.emote.setVisible(false);
-                this.sleepEmoteTimer.reset({ delay: 5000, callback: this.onSleepEmote, callbackScope: this});
+                this.sleepEmoteTimer.reset({ delay: 4000, callback: this.onSleepEmote, callbackScope: this});
                 this.time.addEvent(this.sleepEmoteTimer);
             });
         }
