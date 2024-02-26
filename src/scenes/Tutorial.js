@@ -159,7 +159,8 @@ export class Tutorial extends Scene
             this.landing = this.sound.add('landing', {volume: 0.05});
             this.step = this.sound.add('step', {volume: 0.04});
             this.jump = this.sound.add('jump', {volume: 0.015});
-            this.explodeSound = this.sound.add('explodeSound', {volume: 0.01});
+            this.explodeSound = this.sound.add('explodeSound', {volume: 0.015});
+            this.pickUp = this.sound.add('pickUp', {volume: 0.025});
         }
 
         // dev skip
@@ -284,6 +285,7 @@ function hitPlatPass(player, platform) {
 
 function collectBox(player, box) {
     box.disableBody(true, true);
+    this.pickUp.play();
 
     //collect all boxes to move to next level
     if (this.boxes.countActive(true) === 0)

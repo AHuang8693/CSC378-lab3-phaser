@@ -44,7 +44,7 @@ export class GameOver extends Scene
             objectWithToolTip.fillAlpha = 0;
 
             toolTip =  this.add.rectangle( 0, 0, 835, 120, 0xffffff).setOrigin(0);
-            toolTipText = this.add.text( 0, 0, 'Packerman by Andy Huang\nMade with Phaser3\nopengameart.org - Green Robot, Animated Emote Bubbles, Platformer Sounds (landing.ogg),\n    8-Bit Platformer SFX, Warped City (Explosion Sprites)\nCraftPix.net - Free Industiral Zone Tileset', { fontFamily: 'Arial', fontSize: 20, color: '#000' }).setOrigin(0);
+            toolTipText = this.add.text( 0, 0, 'Packerman by Andy Huang\nMade with Phaser3\nopengameart.org - Green Robot, Animated Emote Bubbles, Platformer Sounds (landing.ogg),\n    8-Bit Platformer SFX, Warped City (Explosion Sprites), 8-Bit Sound Effects Library\nCraftPix.net - Free Industiral Zone Tileset', { fontFamily: 'Arial', fontSize: 20, color: '#000' }).setOrigin(0);
             toolTip.alpha = 0;
             toolTipText.alpha = 0;
         
