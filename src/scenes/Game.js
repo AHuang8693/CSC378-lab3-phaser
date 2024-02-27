@@ -42,6 +42,7 @@ export class Game extends Scene
                 this.platforms = this.physics.add.staticGroup();
                 this.platformsPass = this.physics.add.staticGroup();
                 //This code looks at the tile index and replaces platform tiles with resized static objects
+                //Not exactly sure why, but tile index needs to be one higher than the one given by Tiled program
                 this.worldLayer.forEachTile(tile => {
                     if (tile.index === 85 || tile.index === 86 || tile.index === 87) {
                         // A sprite has its origin at the center, so place the sprite at the center of the tile

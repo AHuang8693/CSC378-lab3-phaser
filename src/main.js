@@ -4,6 +4,7 @@ import { GameOver } from './scenes/GameOver';
 import { MainMenu } from './scenes/MainMenu';
 import { Tutorial } from './scenes/Tutorial';
 import { Preloader } from './scenes/Preloader';
+import { Intro } from './scenes/Intro';
 
 //  Find out more information about the Game Config at:
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
@@ -28,6 +29,7 @@ const config = {
         Boot,
         Preloader,
         MainMenu,
+        Intro,
         Tutorial,
         Game,
         GameOver

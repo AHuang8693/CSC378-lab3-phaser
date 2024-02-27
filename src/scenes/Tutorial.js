@@ -36,6 +36,7 @@ export class Tutorial extends Scene
                 this.platforms = this.physics.add.staticGroup();
                 this.platformsPass = this.physics.add.staticGroup();
                 //This code looks at the tile index and replaces tiles with resized static objects
+                //Not exactly sure why, but tile index needs to be one higher than the one given by Tiled program
                 this.worldLayer.forEachTile(tile => {
                     if (tile.index === 85 || tile.index === 86 || tile.index === 87) {
                         // A sprite has its origin at the center, so place the sprite at the center of the tile
@@ -117,8 +118,8 @@ export class Tutorial extends Scene
         var textConfig = {fontSize:'20px', color:'white', fontFamily: 'Graviton'};
         this.hintSign1 =  this.add.rectangle(77, 556, 550, 50, 0x008000).setOrigin(0);
         this.hintSign1Text = this.add.text(87, 560, 'Uh oh, looks like factory pipes have broken! Time to get to work.\nUse arrows keys to move and jump. Collect all the boxes you can!', textConfig).setOrigin(0);
-        this.hintSign2 =  this.add.rectangle(63, 268, 415, 50, 0x008000).setOrigin(0);
-        this.hintSign2Text = this.add.text(73, 270, 'Look like some explosive packages got mixed in.\n                  Careful not to touch them!', textConfig).setOrigin(0);
+        this.hintSign2 =  this.add.rectangle(63, 268, 420, 50, 0x008000).setOrigin(0);
+        this.hintSign2Text = this.add.text(73, 270, 'Looks like some explosive packages got mixed in.\n                  Careful not to touch them!', textConfig).setOrigin(0);
         this.hintSign3 =  this.add.rectangle(559, 140, 390, 50, 0x008000).setOrigin(0);
         this.hintSign3Text = this.add.text(569, 142, ' Press down to drop through these platforms.\nBombs pass right through them, so be careful!', textConfig).setOrigin(0);
         this.hintSign1.alpha = 0;

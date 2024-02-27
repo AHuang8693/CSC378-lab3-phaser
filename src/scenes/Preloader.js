@@ -35,6 +35,7 @@ export class Preloader extends Scene
         this.load.image('tiles', 'IndustrialTilesV2.png');
         this.load.tilemapTiledJSON('map1', "PackerMap1.json");
         this.load.tilemapTiledJSON('tutorialMap', "PackerTutorial.json");
+        this.load.tilemapTiledJSON('introMap', "PackerIntro.json");
 
         this.load.image('ground', 'platform.png');
         this.load.image('star', 'star.png');
@@ -47,10 +48,11 @@ export class Preloader extends Scene
         this.load.image('plat2', "IndustrialTile_78.png");
         this.load.image('plat3', "IndustrialTile_79.png");
         this.load.image('platPass', "IndustrialTile_18.png");
+        this.load.image('chargeStation', "IndustrialTile_45.png");
 
         this.load.setPath('assets/industrial-zone/3 Objects');
         this.load.image('box', 'Box4.png');
-        this.load.image('bomb', 'Box8.png')
+        this.load.image('bomb', 'Box8.png');
 
         this.load.setPath('assets/SFX');
         this.load.audio("landing", 'landing.ogg');
