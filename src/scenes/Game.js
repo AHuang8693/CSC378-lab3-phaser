@@ -253,7 +253,7 @@ function collectBox(player, box)
         });
         this.spawnBoxes.play();
         // spawn bomb
-        var x = (this.player.x < 512) ? Phaser.Math.Between(512, 832) : Phaser.Math.Between(192, 512);
+        var x = (this.player.sprite.x < 512) ? Phaser.Math.Between(512, 832) : Phaser.Math.Between(192, 512);
         var bomb = bombs.create(x, 100, 'bomb');
         bomb.setSize(28,22).setOffset(0, 10); //resize to sprite size
         bomb.setBounce(1);

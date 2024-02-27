@@ -156,6 +156,9 @@ export class Tutorial extends Scene
 
         // ---Sound---
         {
+            this.gameMusic = this.sound.add("gameMusic");
+            this.gameMusic.play({loop: true, volume: 0.05});
+            
             this.landing = this.sound.add('landing', {volume: 0.05});
             this.step = this.sound.add('step', {volume: 0.04});
             this.jump = this.sound.add('jump', {volume: 0.015});

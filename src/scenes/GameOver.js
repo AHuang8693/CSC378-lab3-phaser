@@ -81,6 +81,7 @@ export class GameOver extends Scene
         }
 
         //play game over music
+        this.sound.removeByKey("gameMusic");
         this.gameOverMusic = this.sound.add("gameOverMusic");
         this.gameOverMusic.play({volume: 0.04});
 
@@ -94,6 +95,8 @@ export class GameOver extends Scene
                 this.scene.start("Tutorial");
             }
             else if(this.level==1) {
+                this.gameMusic = this.sound.add("gameMusic");
+                this.gameMusic.play({loop: true, volume: 0.05});
                 this.gameOver = false;
                 this.scene.start('Game');
             }
