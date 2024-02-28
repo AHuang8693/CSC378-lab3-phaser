@@ -89,6 +89,11 @@ export class Preloader extends Scene
             frames: this.anims.generateFrameNumbers('emote', { start: 16, end: 23 }),
             frameRate: 10
         });
+        this.anims.create({
+            key: 'question',
+            frames: this.anims.generateFrameNumbers('emote', { start: 24, end: 31 }),
+            frameRate: 10
+        });
 
         //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
         this.scene.start('MainMenu');

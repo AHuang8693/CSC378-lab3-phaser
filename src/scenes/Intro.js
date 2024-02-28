@@ -1,8 +1,8 @@
 import { Scene } from 'phaser';
-import Player from '../player.js';
 
-//prevents tweens from repeating in later code, which would hide the signs
-var canReadSign = true;
+var player;
+var emote;
+var step = 0;
 
 export class Intro extends Scene
 {
@@ -75,19 +75,72 @@ export class Intro extends Scene
                 });
 
             }
-        
-        
-        // The player and its settings
 
-        this.player = this.physics.add.sprite(150, 608, 'player').setCollideWorldBounds(true).setSize(36, 39).setOffset(0, 8);
+        this.bots = this.physics.add.staticGroup(); 
+        // The player, its settings, and animations
+        {
+            this.bot3 = this.bots.create(208, 624, 'player').setSize(36, 39).setOffset(0, 8).setTint(0x808080); 
+            player = this.physics.add.sprite(176, 624, 'player').setCollideWorldBounds(true).setSize(36, 39).setOffset(0, 8).setTint(0x808080);
+            this.bot1 = this.bots.create(144, 624, 'player').setSize(36, 39).setOffset(0, 8).setTint(0x808080);  
+            this.bot6 = this.bots.create(208, 464, 'player').setSize(36, 39).setOffset(0, 8).setTint(0x808080);
+            this.bot5 = this.bots.create(176, 464, 'player').setSize(36, 39).setOffset(0, 8).setTint(0x808080);     
+            this.bot4 = this.bots.create(144, 464, 'player').setSize(36, 39).setOffset(0, 8).setTint(0x808080);        
+
+            this.anims.create({
+                key: 'run',
+                frames: this.anims.generateFrameNumbers('player', { start: 9, end: 13 }),
+                frameRate: 8,
+                repeat: -1
+            });
+
+            this.anims.create({
+                key: 'idle',
+                frames: this.anims.generateFrameNumbers('player', { start: 0, end: 2 }),
+                frameRate: 5,
+                repeat: -1
+            });
+
+            this.anims.create({
+                key: 'sleep1',
+                frames: [ { key: 'player', frame: 18} ],
+                frameRate: 1
+            });
+            
+            this.anims.create({
+                key: 'sleep2',
+                frames: [ { key: 'player', frame: 19} ],
+                frameRate: 1
+            });
+
+            this.anims.create({
+                key: 'jump',
+                frames: [ { key: 'player', frame: 3 } ],
+                frameRate: 20
+            });
+
+            this.anims.create({
+                key: 'fall',
+                frames: [ { key: 'player', frame: 4 } ],
+                frameRate: 20
+            });
+
+            //start the player and other bots asleep
+            player.anims.play('sleep2');
+
+            this.bots.children.iterate(function (child) {
+
+                child.anims.play('sleep2');
+    
+            });
+        }
 
         //emote (ignores gravity and is initially invisible) {
-        this.emote = this.physics.add.sprite(this.player.x, this.player.y, "emote");
-        this.emote.body.setAllowGravity(false);
-        this.emote.setVisible(false);
+        emote = this.physics.add.sprite(player.x, player.y, "emote");
+        emote.body.setAllowGravity(false);
+        emote.setVisible(false);
         
         //explode object to play animation (since the explosion sprites aren't in the player sprite sheet, sizes are off)
-        this.explode = this.physics.add.sprite(this.player.x, this.player.y, "explode");
+        this.explode = this.physics.add.sprite(player.x, player.y, "explode");
         this.explode.body.setAllowGravity(false);
         this.explode.setVisible(false);
 
@@ -114,9 +167,9 @@ export class Intro extends Scene
         // ---Collision---
         {
             //  Collide the player and the boxes with map tiles
-            this.physics.add.collider(this.player, this.worldLayer, hitGround, null, this);
-            this.physics.add.collider(this.player, this.platforms, hitGround, null, this);
-            this.physics.add.collider(this.player, this.platformsPass, hitPlatPass, null, this);
+            this.physics.add.collider(player, this.worldLayer, hitGround, null, this);
+            this.physics.add.collider(player, this.platforms, hitGround, null, this);
+            this.physics.add.collider(player, this.platformsPass, hitPlatPass, null, this);
             this.physics.add.collider(this.boxes, this.worldLayer);
             this.physics.add.collider(this.boxes, this.platforms);
             this.physics.add.collider(this.boxes, this.platformsPass);
@@ -125,14 +178,14 @@ export class Intro extends Scene
             // this.physics.add.collider(this.bombs, this.platformsPass);
 
             //  Checks to see if the player overlaps with any of the boxes, if they do call the collectBox function
-            this.physics.add.overlap(this.player, this.boxes, collectBox, null, this);
-            this.physics.add.collider(this.player, this.bombs, hitBomb, null, this);
+            this.physics.add.overlap(player, this.boxes, collectBox, null, this);
+            this.physics.add.collider(player, this.bombs, hitBomb, null, this);
         }
         // ---Camera---
         {
         this.cameras.main.setSize(1024, 768);
         this.cameras.main.setBounds(0, 0, 800, 600);
-        this.cameras.main.startFollow(this.player, false, 1, 1, 0, 0);
+        this.cameras.main.startFollow(player, false, 1, 1, 0, 0);
         }
 
         // ---Sound---
@@ -149,6 +202,19 @@ export class Intro extends Scene
             this.firstLanding = true;
         }
 
+        const chain = this.tweens.chain({
+            targets: player,
+            tweens: [
+                {
+                    x: player.x,
+                    onComplete: this.playStep,
+                    duration: 1500,
+                    repeat: 0
+                }
+
+            ]
+        });
+
         // dev skip
         // this.input.once('pointerdown', () => {
         //     this.scene.start('Game');
@@ -159,6 +225,28 @@ export class Intro extends Scene
             // this.idleTimer = this.time.addEvent({ delay: 4000, callback: this.onIdle, callbackScope: this});
             // this.sleepTimer = new Phaser.Time.TimerEvent({ delay: 2000, callback: this.onSleep, callbackScope: this});
             // this.sleepEmoteTimer = new Phaser.Time.TimerEvent({ delay: 4000, callback: this.onSleepEmote, callbackScope: this});
+        }
+        
+    }
+
+    playStep() {
+        step += 1;
+        switch(step) {
+            case 1:
+                player.clearTint();
+                player.anims.play('sleep1');
+                emote.setVisible(true);
+                emote.anims.play('question');
+                emote.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
+                    emote.setVisible(false);
+                });
+                break;
+            case 2:
+                console.log('2');
+                player.anims.play('sleep2');
+                break;
+            default:
+                break;
         }
         
     }
@@ -186,10 +274,10 @@ export class Intro extends Scene
     //For playing the waiting emote while sleeping
     // onSleepEmote() {
     //     if(this.player.playerIdle) {
-    //         this.emote.setVisible(true);
-    //         this.emote.anims.play('ellipsis', true);
-    //         this.emote.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
-    //             this.emote.setVisible(false);
+    //         emote.setVisible(true);
+    //         emote.anims.play('ellipsis', true);
+    //         emote.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
+    //             emote.setVisible(false);
     //             this.sleepEmoteTimer.reset({ delay: 4000, callback: this.onSleepEmote, callbackScope: this});
     //             this.time.addEvent(this.sleepEmoteTimer);
     //         });
@@ -199,14 +287,12 @@ export class Intro extends Scene
 
     update ()
     {
-
-        
         // emote sprite follows player
-        this.emote.setX(this.player.x);
-        this.emote.setY(this.player.y - 40);
+        emote.setX(player.x);
+        emote.setY(player.y - 40);
         //same for explosion object
-        this.explode.setX(this.player.x);
-        this.explode.setY(this.player.y);
+        this.explode.setX(player.x);
+        this.explode.setY(player.y);
 
     }
     
@@ -214,25 +300,25 @@ export class Intro extends Scene
 
 function hitGround (player, worldLayer) {
     //if makes sure we're touching the ground, othewise sound would trigger on walls
-    if (this.player.body.blocked.down){
+    if (player.body.blocked.down){
         //makes sure it only plays on a landing once
         // if (this.player.inAir) {
         //     this.player.inAir = false;
-            if(this.firstLanding) {this.firstLanding = false;}
-            else {this.landing.play();}
+            // if(this.firstLanding) {this.firstLanding = false;}
+            // else {this.landing.play();}
         // }
     }
 }
 
 function hitPlatPass(player, platform) {
-    if (this.player.sprite.body.blocked.down){
-        if (this.player.inAir) {
-            this.player.inAir = false;
+    if (player.sprite.body.blocked.down){
+        if (player.inAir) {
+            player.inAir = false;
             this.landing.play();
         }
     }
-    this.player.isOnPlatformPass = true;
-    this.player.onPlatform = platform; //pass platform object to Player
+    player.isOnPlatformPass = true;
+    player.onPlatform = platform; //pass platform object to Player
 }
 
 function collectBox(player, box) {
@@ -250,7 +336,7 @@ function hitBomb (player, bomb) {
     this.physics.pause();
     bomb.setVisible(false);
 
-    this.player.sprite.setVisible(false);
+    player.sprite.setVisible(false);
 
     if(!this.explodeSound.isPlaying) {
         this.explodeSound.play();
