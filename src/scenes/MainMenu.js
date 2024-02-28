@@ -51,13 +51,13 @@ export class MainMenu extends Scene
 
             //skip animation with second key press
             if(skipFlag) {
-                this.scene.start('Intro'); //temp -----
+                this.scene.start('Intro');
             }
             skipFlag = true;
 
         });
     }
     startGame() {
-        this.scene.start('Tutorial');
+        this.scene.start('Intro');
     }    
 }

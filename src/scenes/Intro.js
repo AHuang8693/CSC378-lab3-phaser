@@ -7,6 +7,8 @@ var runNoise;
 var explode;
 var explodeSound;
 var boxes;
+var spawnBoxesSound;
+var wakeUpSound;
 
 export class Intro extends Scene
 {
@@ -189,6 +191,8 @@ export class Intro extends Scene
             this.jump = this.sound.add('jump', {volume: 0.015});
             explodeSound = this.sound.add('explodeSound', {volume: 0.015});
             this.pickUp = this.sound.add('pickUp', {volume: 0.025});
+            spawnBoxesSound = this.sound.add('spawnBoxes', {volume: 0.05});
+            wakeUpSound = this.sound.add('wakeUp', {volume: 0.06});
 
             this.firstLanding = true;
         }
@@ -203,169 +207,75 @@ export class Intro extends Scene
             tweens: [
                 { //1, 2 - explode & wakeup, standup
                     x: player.x,
-                    onRepeat: this.playStep,
+                    onRepeat: playStep,
                     duration: 1500,
                     repeat: 2
                 },
                 { //3, 4, 5 - look left, right, start run anim
                     x: player.x,
-                    onRepeat: this.playStep,
-                    onComplete: this.playStep,
+                    onRepeat: playStep,
+                    onComplete: playStep,
                     duration: 500,
                     repeat: 2
                 },
                 {//6 - move player near boxes then exclaim & idle in place
                     x: 576,
                     onUpdate: this.makeRunNoise,
-                    onComplete: this.playStep,
+                    onComplete: playStep,
                     duration: 2353
                 },
                 {//7 - waits for exclaim anim to finish, onComplete starts run anim
                     x: 576,
-                    onComplete: this.playStep,
+                    onComplete: playStep,
                     duration: 800
                 },
                 {//8 - move player to box and stop
                     x: 656,
                     onUpdate: this.makeRunNoise,
-                    onComplete: this.playStep,
+                    onComplete: playStep,
                     duration: 471
                 },
                 {//9 - wait a bit after picking up box, onComplete starts run anim
                     x: 656,
-                    onComplete: this.playStep,
+                    onComplete: playStep,
                     duration: 300
                 },
                 {//10 - move to next box
                     x: 752,
                     onUpdate: this.makeRunNoise,
-                    onComplete: this.playStep,
+                    onComplete: playStep,
                     duration: 565
                 },
                 {//11 - wait a bit after picking up box, onComplete starts run anim
                     x: 752,
-                    onComplete: this.playStep,
+                    onComplete: playStep,
                     duration: 300
                 },
                 {//12 - run off screen, start sceen
                     x: 1088,
                     onUpdate: this.makeRunNoise,
-                    onComplete: this.playStep,
+                    onComplete: playStep,
                     duration: 1976
                 }
             ]
         });
 
-        // dev skip
-        // this.input.once('pointerdown', () => {
-        //     this.scene.start('Game');
-        // });
+        // skip intro with key press
+        this.input.keyboard.on('keydown', () => {
+                this.scene.start('Tutorial');
 
-        // ---Timer---
-        {
-            // this.idleTimer = this.time.addEvent({ delay: 4000, callback: this.onIdle, callbackScope: this});
-            // this.sleepTimer = new Phaser.Time.TimerEvent({ delay: 2000, callback: this.onSleep, callbackScope: this});
-            // this.sleepEmoteTimer = new Phaser.Time.TimerEvent({ delay: 4000, callback: this.onSleepEmote, callbackScope: this});
-        }
+        });
+
         
     }
 
-    playStep() {
-        step += 1;
-        switch(step) {
-            case 1: //explode & wakeup
-                makeExplosion(); //makes explosion and spawn boxes
-                player.clearTint();
-                player.anims.play('sleep1');
-                emote.setVisible(true);
-                emote.anims.play('question');
-                emote.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
-                    emote.setVisible(false);
-                });
-                break;
-            case 2: //standup
-                player.setDepth(100); //brings to front
-                player.anims.play('still');
-                break;
-            case 3: //look left
-                player.setFlipX(true);
-                break;
-            case 4: //look right
-                player.setFlipX(false);
-                break;
-            case 5: //start run anim
-                player.anims.play('run');
-                break;
-            case 6: //move player near boxes then exclaim & idle in place
-                player.anims.play('idle');
-                emote.setVisible(true);
-                emote.anims.play('exclaim');
-                emote.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
-                    emote.setVisible(false);
-                });
-                break;
-            case 7: //after waiting for exclaim anim to finish, start run anim
-                player.anims.play('run');
-                break;
-            case 8: //move player to box and stop
-                player.anims.play('idle');
-                break;
-            case 9: //after waiting a bit when picking up box, start run anim
-                player.anims.play('run');
-                break;
-            case 10: //move player to box and stop
-                player.anims.play('idle');
-                break;
-            case 11: //after waiting a bit when picking up box, start run anim
-                player.anims.play('run');
-                break;
-            case 12:
-                startTutorial();
-                break;
-            default:
-                break;
-        }
-        
-    }
+    
 
     makeRunNoise() {
         if(!runNoise.isPlaying && player.body.blocked.down) {
             runNoise.play();
         }
     }
-    // ---Timer Functions---
-    //restarts idle related timers and marks player as not idle. Function is called when a movement key is pressed
-    // resetIdle() {
-    //     this.idleTimer.reset({ delay: 4000, callback: this.onIdle, callbackScope: this});
-    //     this.sleepTimer.reset({ delay: 2000, callback: this.onSleep, callbackScope: this});
-    //     this.sleepEmoteTimer.reset({ delay: 4000, callback: this.onSleepEmote, callbackScope: this});
-    //     this.time.addEvent(this.idleTimer);
-    //     this.player.playerIdle = false;
-    // }
-    //after time triggers, mark the player as idle, start 2s sleep timer
-    // onIdle() {
-    //     this.player.playerIdle = true;
-    //     this.time.addEvent(this.sleepTimer);
-    // }
-    //For transitioning between the two sleep frames, start 5s sleep Emote timer
-    // onSleep() {
-    //     this.player.isAsleep = true;
-    //     //another reset here because the one in resetIdle() doesn't seem to stop this timer in-progress for some reason
-    //     this.sleepEmoteTimer.reset({ delay: 4000, callback: this.onSleepEmote, callbackScope: this});
-    //     this.time.addEvent(this.sleepEmoteTimer);
-    // }
-    //For playing the waiting emote while sleeping
-    // onSleepEmote() {
-    //     if(this.player.playerIdle) {
-    //         emote.setVisible(true);
-    //         emote.anims.play('ellipsis', true);
-    //         emote.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
-    //             emote.setVisible(false);
-    //             this.sleepEmoteTimer.reset({ delay: 4000, callback: this.onSleepEmote, callbackScope: this});
-    //             this.time.addEvent(this.sleepEmoteTimer);
-    //         });
-    //     }
-    // }
     
 
     update ()
@@ -373,10 +283,68 @@ export class Intro extends Scene
         // emote sprite follows player
         emote.setX(player.x);
         emote.setY(player.y - 40);
-        //same for explosion object
-        // explode.setX(player.x);
-        // explode.setY(player.y);
 
+    }
+    
+}
+
+function playStep() {
+    step += 1;
+    switch(step) {
+        case 1: //explode & wakeup
+            makeExplosion(); //makes explosion and spawn boxes
+            player.clearTint();
+            wakeUpSound.play();
+            player.anims.play('sleep1');
+            emote.setVisible(true);
+            emote.anims.play('question');
+            emote.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
+                emote.setVisible(false);
+            });
+            break;
+        case 2: //standup
+            player.setDepth(100); //brings to front
+            player.anims.play('still');
+            break;
+        case 3: //look left
+            player.setFlipX(true);
+            break;
+        case 4: //look right
+            player.setFlipX(false);
+            break;
+        case 5: //start run anim
+            player.anims.play('run');
+            break;
+        case 6: //move player near boxes then exclaim & idle in place
+            player.anims.play('idle');
+            spawnBoxesSound.play();
+            emote.setVisible(true);
+            emote.anims.play('exclaim');
+            emote.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
+                emote.setVisible(false);
+            });
+            break;
+        case 7: //after waiting for exclaim anim to finish, start run anim
+            player.anims.play('run');
+            break;
+        case 8: //move player to box and stop
+            player.anims.play('idle');
+            break;
+        case 9: //after waiting a bit when picking up box, start run anim
+            player.anims.play('run');
+            break;
+        case 10: //move player to box and stop
+            player.anims.play('idle');
+            break;
+        case 11: //after waiting a bit when picking up box, start run anim
+            player.anims.play('run');
+            break;
+        case 12:
+            //don't have context of the scene for some reason, grabbing scene from global player
+            player.scene.scene.start('Tutorial');
+            break;
+        default:
+            break;
     }
     
 }
@@ -402,10 +370,6 @@ function makeExplosion() {
     });
 }
 
-//function doesn't have context of the scene, using scene from global player
-function startTutorial() {
-    player.scene.scene.start('Tutorial');
-}
 
 function hitPlatPass(player, platform) {
     if (player.sprite.body.blocked.down){
@@ -421,10 +385,4 @@ function hitPlatPass(player, platform) {
 function collectBox(player, box) {
     box.disableBody(true, true);
     this.pickUp.play();
-
-    //collect all boxes to move to next level
-    // if (this.boxes.countActive(true) === 0)
-    // {
-    //     this.scene.start('Game');
-    // }
 }
