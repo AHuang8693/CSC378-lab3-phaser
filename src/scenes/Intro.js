@@ -3,6 +3,10 @@ import { Scene } from 'phaser';
 var player;
 var emote;
 var step = 0;
+var runNoise;
+var explode;
+var explodeSound;
+var boxes;
 
 export class Intro extends Scene
 {
@@ -80,7 +84,7 @@ export class Intro extends Scene
         // The player, its settings, and animations
         {
             this.bot3 = this.bots.create(208, 624, 'player').setSize(36, 39).setOffset(0, 8).setTint(0x808080); 
-            player = this.physics.add.sprite(176, 624, 'player').setCollideWorldBounds(true).setSize(36, 39).setOffset(0, 8).setTint(0x808080);
+            player = this.physics.add.sprite(176, 624, 'player').setCollideWorldBounds(false).setSize(36, 39).setOffset(0, 8).setTint(0x808080);
             this.bot1 = this.bots.create(144, 624, 'player').setSize(36, 39).setOffset(0, 8).setTint(0x808080);  
             this.bot6 = this.bots.create(208, 464, 'player').setSize(36, 39).setOffset(0, 8).setTint(0x808080);
             this.bot5 = this.bots.create(176, 464, 'player').setSize(36, 39).setOffset(0, 8).setTint(0x808080);     
@@ -98,6 +102,12 @@ export class Intro extends Scene
                 frames: this.anims.generateFrameNumbers('player', { start: 0, end: 2 }),
                 frameRate: 5,
                 repeat: -1
+            });
+
+            this.anims.create({
+                key: 'still',
+                frames: [ { key: 'player', frame: 0 } ],
+                frameRate: 20
             });
 
             this.anims.create({
@@ -140,46 +150,27 @@ export class Intro extends Scene
         emote.setVisible(false);
         
         //explode object to play animation (since the explosion sprites aren't in the player sprite sheet, sizes are off)
-        this.explode = this.physics.add.sprite(player.x, player.y, "explode");
-        this.explode.body.setAllowGravity(false);
-        this.explode.setVisible(false);
+        explode = this.physics.add.sprite(656, 592, "explode");
+        explode.body.setAllowGravity(false);
+        explode.setVisible(false);
 
-        //  Some boxes to collect, 3 in total
-        this.boxes = this.physics.add.group();
-        // this.boxes.create(464, 656, 'box');
-        // this.boxes.create(400, 375, 'box');
-        // this.boxes.create(512, 245, 'box');
-        // this.boxes.create(990, 666, 'box');
+        //  Some boxes to collect
+        boxes = this.physics.add.group();
 
-        this.boxes.children.iterate(function (child) {
-
-            //  Give each box a slightly different bounce
-            child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
-            child.setSize(24, 14).setOffset(0, 18) //resize to sprite size
-            // child.disableBody(true, true); // disable for now -----
-
-        });
-
-        this.bombs = this.physics.add.group();
-        // this.bombs.create(111, 375, 'bomb');
 
 
         // ---Collision---
         {
             //  Collide the player and the boxes with map tiles
-            this.physics.add.collider(player, this.worldLayer, hitGround, null, this);
-            this.physics.add.collider(player, this.platforms, hitGround, null, this);
+            this.physics.add.collider(player, this.worldLayer);
+            this.physics.add.collider(player, this.platforms);
             this.physics.add.collider(player, this.platformsPass, hitPlatPass, null, this);
-            this.physics.add.collider(this.boxes, this.worldLayer);
-            this.physics.add.collider(this.boxes, this.platforms);
-            this.physics.add.collider(this.boxes, this.platformsPass);
-            this.physics.add.collider(this.bombs, this.worldLayer);
-            this.physics.add.collider(this.bombs, this.platforms);
-            // this.physics.add.collider(this.bombs, this.platformsPass);
+            this.physics.add.collider(boxes, this.worldLayer);
+            this.physics.add.collider(boxes, this.platforms);
+            this.physics.add.collider(boxes, this.platformsPass);
 
             //  Checks to see if the player overlaps with any of the boxes, if they do call the collectBox function
-            this.physics.add.overlap(player, this.boxes, collectBox, null, this);
-            this.physics.add.collider(player, this.bombs, hitBomb, null, this);
+            this.physics.add.overlap(player, boxes, collectBox, null, this);
         }
         // ---Camera---
         {
@@ -194,24 +185,74 @@ export class Intro extends Scene
             // this.gameMusic.play({loop: true, volume: 0.05});
             
             this.landing = this.sound.add('landing', {volume: 0.05});
-            this.step = this.sound.add('step', {volume: 0.04});
+            runNoise = this.sound.add('step', {volume: 0.04});
             this.jump = this.sound.add('jump', {volume: 0.015});
-            this.explodeSound = this.sound.add('explodeSound', {volume: 0.015});
+            explodeSound = this.sound.add('explodeSound', {volume: 0.015});
             this.pickUp = this.sound.add('pickUp', {volume: 0.025});
 
             this.firstLanding = true;
         }
 
+        //for some reason, needs that x line or else onComplete fires immediately.
+        //All it does is move the sprite to the sprite's current position, so does nothing.
+
+        //This tween chain handles timing on cutscene events, played by playStep().
+        //player speed is 170
         const chain = this.tweens.chain({
             targets: player,
             tweens: [
-                {
+                { //1, 2 - explode & wakeup, standup
                     x: player.x,
-                    onComplete: this.playStep,
+                    onRepeat: this.playStep,
                     duration: 1500,
-                    repeat: 0
+                    repeat: 2
+                },
+                { //3, 4, 5 - look left, right, start run anim
+                    x: player.x,
+                    onRepeat: this.playStep,
+                    onComplete: this.playStep,
+                    duration: 500,
+                    repeat: 2
+                },
+                {//6 - move player near boxes then exclaim & idle in place
+                    x: 576,
+                    onUpdate: this.makeRunNoise,
+                    onComplete: this.playStep,
+                    duration: 2353
+                },
+                {//7 - waits for exclaim anim to finish, onComplete starts run anim
+                    x: 576,
+                    onComplete: this.playStep,
+                    duration: 800
+                },
+                {//8 - move player to box and stop
+                    x: 656,
+                    onUpdate: this.makeRunNoise,
+                    onComplete: this.playStep,
+                    duration: 471
+                },
+                {//9 - wait a bit after picking up box, onComplete starts run anim
+                    x: 656,
+                    onComplete: this.playStep,
+                    duration: 300
+                },
+                {//10 - move to next box
+                    x: 752,
+                    onUpdate: this.makeRunNoise,
+                    onComplete: this.playStep,
+                    duration: 565
+                },
+                {//11 - wait a bit after picking up box, onComplete starts run anim
+                    x: 752,
+                    onComplete: this.playStep,
+                    duration: 300
+                },
+                {//12 - run off screen, start sceen
+                    x: 1088,
+                    onUpdate: this.makeRunNoise,
+                    onComplete: this.playStep,
+                    duration: 1976
                 }
-
             ]
         });
 
@@ -232,7 +273,8 @@ export class Intro extends Scene
     playStep() {
         step += 1;
         switch(step) {
-            case 1:
+            case 1: //explode & wakeup
+                makeExplosion(); //makes explosion and spawn boxes
                 player.clearTint();
                 player.anims.play('sleep1');
                 emote.setVisible(true);
@@ -241,14 +283,55 @@ export class Intro extends Scene
                     emote.setVisible(false);
                 });
                 break;
-            case 2:
-                console.log('2');
-                player.anims.play('sleep2');
+            case 2: //standup
+                player.setDepth(100); //brings to front
+                player.anims.play('still');
+                break;
+            case 3: //look left
+                player.setFlipX(true);
+                break;
+            case 4: //look right
+                player.setFlipX(false);
+                break;
+            case 5: //start run anim
+                player.anims.play('run');
+                break;
+            case 6: //move player near boxes then exclaim & idle in place
+                player.anims.play('idle');
+                emote.setVisible(true);
+                emote.anims.play('exclaim');
+                emote.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
+                    emote.setVisible(false);
+                });
+                break;
+            case 7: //after waiting for exclaim anim to finish, start run anim
+                player.anims.play('run');
+                break;
+            case 8: //move player to box and stop
+                player.anims.play('idle');
+                break;
+            case 9: //after waiting a bit when picking up box, start run anim
+                player.anims.play('run');
+                break;
+            case 10: //move player to box and stop
+                player.anims.play('idle');
+                break;
+            case 11: //after waiting a bit when picking up box, start run anim
+                player.anims.play('run');
+                break;
+            case 12:
+                startTutorial();
                 break;
             default:
                 break;
         }
         
+    }
+
+    makeRunNoise() {
+        if(!runNoise.isPlaying && player.body.blocked.down) {
+            runNoise.play();
+        }
     }
     // ---Timer Functions---
     //restarts idle related timers and marks player as not idle. Function is called when a movement key is pressed
@@ -291,23 +374,37 @@ export class Intro extends Scene
         emote.setX(player.x);
         emote.setY(player.y - 40);
         //same for explosion object
-        this.explode.setX(player.x);
-        this.explode.setY(player.y);
+        // explode.setX(player.x);
+        // explode.setY(player.y);
 
     }
     
 }
 
-function hitGround (player, worldLayer) {
-    //if makes sure we're touching the ground, othewise sound would trigger on walls
-    if (player.body.blocked.down){
-        //makes sure it only plays on a landing once
-        // if (this.player.inAir) {
-        //     this.player.inAir = false;
-            // if(this.firstLanding) {this.firstLanding = false;}
-            // else {this.landing.play();}
-        // }
-    }
+//explode the pipe and spawn boxes
+function makeExplosion() {
+    explodeSound.play();
+    explode.setVisible(true);
+    explode.anims.play("playerExplode")
+    explode.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
+        explode.setVisible(false);
+    });
+    var box1 = boxes.create(656, 592, 'box');
+    var box2 = boxes.create(656, 592, 'box');
+    box2.setVelocity(100, -100).setDragX(50);
+
+    boxes.children.iterate(function (child) {
+
+        //  Give each box a slightly different bounce
+        child.setBounceY(0.6);
+        child.setSize(24, 14).setOffset(0, 18) //resize to sprite size
+
+    });
+}
+
+//function doesn't have context of the scene, using scene from global player
+function startTutorial() {
+    player.scene.scene.start('Tutorial');
 }
 
 function hitPlatPass(player, platform) {
@@ -330,24 +427,4 @@ function collectBox(player, box) {
     // {
     //     this.scene.start('Game');
     // }
-}
-
-function hitBomb (player, bomb) {
-    this.physics.pause();
-    bomb.setVisible(false);
-
-    player.sprite.setVisible(false);
-
-    if(!this.explodeSound.isPlaying) {
-        this.explodeSound.play();
-    }
-
-    this.explode.setVisible(true);
-    this.explode.anims.play('playerExplode');
-
-
-    this.explode.on("animationcomplete", ()=>{ //listen to when an animation completes, then run
-        this.scene.start('GameOver', {level: 0});
-    });
-    
 }
